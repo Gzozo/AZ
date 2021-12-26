@@ -47,8 +47,6 @@ public class HE extends Ammo
      */
     public void Detonate(GameManager manager)
     {
-        //TODO: Buff: More sharpnell
-        //TODO: Bug: No points from Shrapnell kill (fixed?)
         Random r = new Random();
         for(int i = 0; i < sharpnelCount; i++)
         {
