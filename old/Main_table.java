@@ -99,7 +99,6 @@ public class Main implements Runnable
 			}
 			catch (IOException e1)
 			{
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		}
@@ -123,7 +122,6 @@ public class Main implements Runnable
 		}
 		catch (IOException | URISyntaxException e2)
 		{
-			// TODO Auto-generated catch block
 			e2.printStackTrace();
 		}
 		
@@ -192,7 +190,6 @@ public class Main implements Runnable
 				}
 				catch (IOException | URISyntaxException e1)
 				{
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 				super.windowClosing(e);
@@ -300,7 +297,6 @@ public class Main implements Runnable
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		Main m = new Main();

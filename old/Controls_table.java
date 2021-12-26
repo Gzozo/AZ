@@ -27,7 +27,6 @@ public class Controls extends AbstractTableModel
 		@Override
 		public TableColumn getColumn(int columnIndex)
 		{
-			// TODO Auto-generated method stub
 			TableColumn tc = super.getColumn(columnIndex);
 			tc.setCellEditor(new KeyCellEditor());
 			return tc;
@@ -46,7 +45,6 @@ public class Controls extends AbstractTableModel
 			super(textField);
 			textField.addKeyListener((CellEditorPro) delegate);
 			clickCountToStart = 1;
-			// TODO Auto-generated constructor stub
 		}
 		
 		public KeyCellEditor()
@@ -54,11 +52,6 @@ public class Controls extends AbstractTableModel
 			super(new JTextField());
 			getComponent().setName("Table.editor");
 		}
-		// TODO:
-		// Override CellEditor, mást kell visszaadni, aminek van KeyListenere is, és az
-		// értéke attól függ
-		// Esetleg extends DefaultCellEditor.EditorDelegate impements KeyListener
-		// Elõtte megcsinálni a menüt és a menubart
 		
 		@SuppressWarnings("serial")
 		class CellEditorPro extends EditorDelegate implements KeyListener
@@ -72,7 +65,6 @@ public class Controls extends AbstractTableModel
 			@Override
 			public void keyTyped(KeyEvent e)
 			{
-				// TODO Auto-generated method stub
 				
 			}
 			
@@ -87,7 +79,6 @@ public class Controls extends AbstractTableModel
 			@Override
 			public void keyReleased(KeyEvent e)
 			{
-				// TODO Auto-generated method stub
 				
 			}
 			
@@ -112,14 +103,12 @@ public class Controls extends AbstractTableModel
 	@Override
 	public int getRowCount()
 	{
-		// TODO Auto-generated method stub
 		return commands.size();
 	}
 	
 	@Override
 	public int getColumnCount()
 	{
-		// TODO Auto-generated method stub
 		return 2;
 	}
 	
@@ -144,7 +133,6 @@ public class Controls extends AbstractTableModel
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex)
 	{
-		// TODO Auto-generated method stub
 		return columnIndex == 1;
 	}
 	
