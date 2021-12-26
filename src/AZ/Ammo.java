@@ -1,0 +1,277 @@
+package AZ;
+
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.imageio.ImageIO;
+
+import org.json.JSONObject;
+
+/**
+ * L�ved�k
+ */
+public abstract class Ammo implements GameEntity
+{
+    public double speedx, speedy, x, y, rad;
+    int lifeTime;
+    double prevx, prevy, prevrad;
+    Field f;
+    int cooldown = 60;
+    Color c = Color.BLACK;
+    String type = "default";
+    int shellCount = 10;
+    public String pic = "";
+    public BufferedImage picture = null;
+    public Tank parent;
+    
+    public Ammo(double x, double y, double rad, double speed, double rot, int lifeTime, Field f)
+    {
+        this.speedx = speed * Math.cos(rot);
+        this.speedy = speed * Math.sin(rot);
+        this.x = prevx = x;
+        this.y = prevy = y;
+        this.rad = prevrad = rad;
+        this.f = f;
+        this.lifeTime = lifeTime;
+    }
+    
+    public Ammo()
+    {
+        this(0, 0, 0, 0, 0, 0, null);
+    }
+    
+    /**
+     * K�p be�ll�t�sa
+     *
+     * @param pic K�p file neve
+     */
+    public void setPic(String pic)
+    {
+        
+        if(pic.equals(this.pic))
+            return;
+        this.pic = pic;
+        try
+        {
+            if(pic.equals(""))
+                picture = null;
+            else
+                picture = ImageIO.read(Main.class.getResource(Const.Resources + pic));
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    public Tank untargetableTank;
+    
+    /**
+     * Nem tal�lhatja el ezt a tankot
+     *
+     * @param t  A tank
+     * @param ms Ennyi ideig
+     */
+    public void setInvincible(Tank t, int ms)
+    {
+        untargetableTank = t;
+        Executors.newScheduledThreadPool(1).schedule(() -> untargetableTank = null, ms, TimeUnit.MILLISECONDS);
+    }
+    
+    @Override
+    public synchronized void Draw(Graphics2D g)
+    {
+        Draw(g, c);
+    }
+    
+    /**
+     * Rajzol
+     *
+     * @param g V�szon
+     * @param c Sz�n
+     */
+    public synchronized void Draw(Graphics2D g, Color c)
+    {
+        g.setColor(c);
+        Erase(g);
+        if(type.equals("default"))
+        {
+            g.fillArc((int) (x - rad / 2), (int) (y - rad / 2), (int) rad, (int) rad, 0, 360);
+        }
+        else if(type.equals("power"))
+        {
+            g.fillRect((int) (x - rad), (int) (y - rad), (int) rad * 2, (int) rad * 2);
+            if(picture != null)
+                g.drawImage(picture.getScaledInstance((int) rad * 2, (int) rad * 2, Image.SCALE_DEFAULT),
+                        (int) (x - rad), (int) (y - rad), null);
+        }
+        prevx = x;
+        prevy = y;
+        prevrad = rad;
+    }
+    
+    @Override
+    public synchronized void Erase(Graphics2D g)
+    {
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
+        if(type.equals("default"))
+        {
+            g.fillRect((int) (prevx - prevrad / 2), (int) (prevy - prevrad / 2), (int) prevrad, (int) prevrad);
+        }
+        else if(type.equals("power"))
+        {
+            g.fillRect((int) (prevx - prevrad), (int) (prevy - prevrad), (int) prevrad * 2, (int) prevrad * 2);
+        }
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
+    }
+    
+    boolean music = true;
+    
+    /**
+     * Tick()
+     *
+     * @param manager J�t�k menedzser
+     * @param fal     Sz�moljon e mez? �tk�z�st?
+     */
+    public synchronized void Tick(GameManager manager, boolean fal)
+    {
+        x += speedx;
+        y += speedy;
+        boolean touchx = false, touchy = false;
+        boolean hitwall = false;
+        if(fal && (x != prevx || y != prevy))
+        {
+            int gridX = (int) Math.floor(x / f.gridSize.intValue());
+            int gridY = (int) Math.floor(y / f.gridSize.intValue());
+            kulso:
+            for(int i = Math.max(gridX - 1, 0); i < f.gridWidth && i < gridX + 1; i++)
+            {
+                for(int j = Math.max(gridY - 1, 0); j < f.gridHeigth && j < gridY + 1; j++)
+                {
+                    int ret = f.mezok[i][j].Collision(x, y, rad / 2);
+                    if(ret != 0)
+                    {
+                        if((ret & 1) != 0)
+                        {
+                            touchx = true;
+                        }
+                        if((ret & 2) != 0)
+                        {
+                            touchy = true;
+                        }
+                        hitwall = true;
+                        if(music)
+                        {
+                            music = false;
+                            // manager.PlayMusic(Const.Music.hitWall);
+                        }
+                        break kulso;
+                    }
+                }
+            }
+        }
+        speedx *= touchx ? -1 : 1;
+        speedy *= touchy ? -1 : 1;
+        if(hitwall == false)
+            music = true;
+        lifeTime--;
+        if(lifeTime <= 0)
+        {
+            OnDeath(manager);
+            manager.RemoveEntity(this);
+        }
+        if(manager.CheckTank(this))
+        {
+            manager.RemoveEntity(this);
+        }
+    }
+    
+    @Override
+    public synchronized void Tick(GameManager manager)
+    {
+        Tick(manager, true);
+    }
+    
+    /**
+     * Amikor meghal a lövedék
+     *
+     * @param manager Játék menedzser
+     */
+    public void OnDeath(GameManager manager)
+    {
+    }
+    
+    /**
+     * Amikor �tk�zik egy tankkal
+     *
+     * @param t A tank
+     */
+    public void OnContact(Tank t)
+    {
+        t.dead = true;
+    }
+    
+    @Override
+    public JSONObject toJSON()
+    {
+        JSONObject ret = new JSONObject();
+        
+        ret.put("x", x);
+        ret.put("y", y);
+        ret.put("speedx", speedx);
+        ret.put("speedy", speedx);
+        ret.put("rad", rad);
+        ret.put("color", c.getRGB());
+        ret.put("type", type);
+        
+        return ret;
+    }
+    
+    @Override
+    public void setFromJSON(JSONObject set)
+    {
+        x = set.getDouble("x");
+        y = set.getDouble("y");
+        speedx = set.getDouble("speedx");
+        speedy = set.getDouble("speedy");
+        rad = set.getDouble("rad");
+        c = new Color(set.getInt("color"));
+        type = set.getString("type");
+        setPic(set.optString("pic", ""));
+    }
+    
+    /**
+     * K�sz�t egy �j objektumot abb�l a t�pus� l�ved�kb?l
+     *
+     * @param x   Koordin�ta
+     * @param y   Koordin�ta
+     * @param rot Tank elfordul�sa
+     * @param f   Labirintus
+     * @return Az �j l�ced�k
+     */
+    public abstract Ammo newInstance(double x, double y, double rot, Field f);
+    
+    /**
+     * K�sz�t egy �j objektumot abb�l a t�pus� l�ved�kb?l
+     *
+     * @return Az �j l�ved�k
+     */
+    public abstract Ammo newInstance();
+    
+    /**
+     * Visszaad egy �j alap l�ved�ket
+     *
+     * @return A l�ved�k
+     */
+    public static Ammo getDefaultAmmo()
+    {
+        return new AP();
+    }
+    
+}
