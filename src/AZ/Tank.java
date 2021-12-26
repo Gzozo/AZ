@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
@@ -54,8 +55,8 @@ public class Tank implements GameEntity
         colX = this.rectWidth - colW;
         colY = this.rectHeight - colH;
         gridSize = grid;
-        //TODO: random
-        rot = prevRot = 0;
+        Random r = new Random();
+        rot = prevRot = r.nextInt(4) * Math.PI / 2;
         for(Entry<String, Integer> entry : Controls.commands.entrySet())
         {
             keys.put(entry.getValue(), false);

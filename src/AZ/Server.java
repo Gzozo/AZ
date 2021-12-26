@@ -205,7 +205,6 @@ public class Server extends Thread implements GameManager
     String AllData()
     {
         //TODO: Music only played on client, client based movement
-        //TODO: Bug: Same color tanks
         JSONObject ret = new JSONObject();
         JSONObject entity = new JSONObject();
         for(int i = 0; i < entities.size(); i++)
@@ -456,7 +455,6 @@ public class Server extends Thread implements GameManager
                         val.death++;
                         if(val.t != ammo.parent)
                         {
-                            //TODO: valami hiba volt itt No value present, NoSuchElementException
                             players.getOwner(ammo.parent).kill++;
                         }
                         PlayMusic(Const.Music.tankDestroy);
