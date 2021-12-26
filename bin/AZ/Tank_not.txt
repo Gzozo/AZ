@@ -36,7 +36,6 @@ public class Tank implements GameEntity
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// image=s;
@@ -92,7 +91,6 @@ public class Tank implements GameEntity
 	@Override
 	public void Tick()
 	{
-		// TODO Auto-generated method stub
 		
 	}
 	
