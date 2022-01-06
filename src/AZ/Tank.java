@@ -21,6 +21,7 @@ import org.json.JSONObject;
 /**
  * Tiger E
  */
+@SuppressWarnings("ALL")
 public class Tank implements GameEntity
 {
     
@@ -41,6 +42,9 @@ public class Tank implements GameEntity
     GameManager manager;
     Ammo ammo;
     
+    //TODO: Smaller tanks
+    //TODO: Default ctor (maybe?)
+    //TODO: Finer rotate with pressed keys
     public Tank(int x, int y, int rectWidth, int rectHeight, String s, Field f, AtomicInteger grid, GameManager panel)
     {
         this.x = prevX = x;
@@ -74,7 +78,7 @@ public class Tank implements GameEntity
      */
     private void loadImage(int rectWidth, int rectHeight, String s)
     {
-        if(s == "")
+        if(s.equals(""))
             return;
         try
         {
@@ -277,7 +281,7 @@ public class Tank implements GameEntity
     public double Spawny(double rad)
     {
         // return Math.cos(-rot) * (rectHeight / 2 + rad / 2 + 1) + y + rectHeight / 2;
-        return +Math.cos(rot) * (-rectHeight / 2 - rad) + centery();
+        return Math.cos(rot) * (-rectHeight / 2 - rad) + centery();
     }
     
     /**
@@ -389,7 +393,7 @@ public class Tank implements GameEntity
             return false;
         double w = rectWidth, h = rectHeight;
         double centerx = centerx(), centery = centery();
-        double[][] vertices = {{-w / 2, -h / 2}, {+w / 2, -h / 2}, {+w / 2, +h / 2}, {-w / 2, +h / 2}};
+        double[][] vertices = {{-w / 2, -h / 2}, {w / 2, -h / 2}, {w / 2, h / 2}, {-w / 2, h / 2}};
         Arrays.stream(vertices).forEach(x ->
         {
             double copy = x[0];
