@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +19,7 @@ import org.json.JSONObject;
  */
 public abstract class Ammo implements GameEntity
 {
+    public double rot, speed;
     public double speedx, speedy, x, y, rad;
     int lifeTime;
     double prevx, prevy, prevrad;
@@ -32,8 +34,8 @@ public abstract class Ammo implements GameEntity
     
     public Ammo(double x, double y, double rad, double speed, double rot, int lifeTime, Field f)
     {
-        this.speedx = speed * Math.cos(rot);
-        this.speedy = speed * Math.sin(rot);
+        this.speed = speed;
+        setRot(rot);
         this.x = prevx = x;
         this.y = prevy = y;
         this.rad = prevrad = rad;
@@ -132,6 +134,7 @@ public abstract class Ammo implements GameEntity
     }
     
     boolean music = true;
+    final double changeDir = 0.2;
     
     /**
      * Tick()
@@ -176,9 +179,17 @@ public abstract class Ammo implements GameEntity
                 }
             }
         }
-        speedx *= touchx ? -1 : 1;
-        speedy *= touchy ? -1 : 1;
-        if(hitwall == false)
+        //Maybe do not generate value all the time?
+        double dist = new Random().nextDouble() * changeDir - changeDir / 2;
+        if(touchy)
+        {
+            setRot(-rot + dist);
+        }
+        if(touchx)
+        {
+            setRot(Math.PI - rot + dist);
+        }
+        if(!hitwall)
             music = true;
         lifeTime--;
         if(lifeTime <= 0)
@@ -244,6 +255,17 @@ public abstract class Ammo implements GameEntity
         c = new Color(set.getInt("color"));
         type = set.getString("type");
         setPic(set.optString("pic", ""));
+    }
+    
+    void setRot(double r)
+    {
+        rot = r;
+        while(rot < 0)
+            rot += Math.PI * 2;
+        while(rot > Math.PI * 2)
+            rot -= Math.PI * 2;
+        this.speedx = speed * Math.cos(rot);
+        this.speedy = speed * Math.sin(rot);
     }
     
     /**
