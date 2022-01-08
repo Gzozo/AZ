@@ -24,7 +24,7 @@ public class Mezo
         for(int i = 0; i < 4; i++)
         {
             zart[i] = true;
-            vege[i] = 0;
+            vege[i] = 3;
         }
         this.grid = grid;
     }

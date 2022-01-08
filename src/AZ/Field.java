@@ -76,16 +76,19 @@ public class Field
                         
                     }
                 }*/
-                if(mezok[i][j].zart[0])
+                if(mezok[i][j].zart[0] && !mezok[i][j].zart[1] && !mezok[i][j].zart[3])
                 {
                     mezok[i][j].vege[0] = 0;
                     if(!mezok[i - 1][j].zart[0])
                         mezok[i][j].vege[0] |= 0x01;
                     if(!mezok[i + 1][j].zart[0])
                         mezok[i][j].vege[0] |= 0x02;
-                    mezok[i][j - 1].vege[2] = mezok[i][j].vege[0];
+                    mezok[i][j - 1].vege[2] &= mezok[i][j].vege[0];
+                    mezok[i][j].vege[0] &= mezok[i][j - 1].vege[2];
                 }
-                if(mezok[i][j].zart[2])
+                else
+                    mezok[i][j - 1].vege[2] = mezok[i][j].vege[0] = 0;
+                if(mezok[i][j].zart[2] && !mezok[i][j].zart[1] && !mezok[i][j].zart[3])
                 {
                     //mezok[i][j].vege[2] = mezok[i][j + 1].vege[0] = (short) (!mezok[i - 1][j].zart[2] ? 1 :
                     // !mezok[i + 1][j].zart[2] ? 2 : 0);
@@ -94,9 +97,12 @@ public class Field
                         mezok[i][j].vege[2] |= 0x01;
                     if(!mezok[i + 1][j].zart[2])
                         mezok[i][j].vege[2] |= 0x02;
-                    mezok[i][j + 1].vege[0] = mezok[i][j].vege[2];
+                    mezok[i][j + 1].vege[0] &= mezok[i][j].vege[2];
+                    mezok[i][j].vege[2] &= mezok[i][j + 1].vege[0];
                 }
-                if(mezok[i][j].zart[1])
+                else
+                    mezok[i][j + 1].vege[0] = mezok[i][j].vege[2] = 0;
+                if(mezok[i][j].zart[1] && !mezok[i][j].zart[0] && !mezok[i][j].zart[2])
                 {
                     //mezok[i][j].vege[1] = mezok[i - 1][j].vege[3] = (short) (!mezok[i][j - 1].zart[1] ? 1 :
                     //        !mezok[i][j + 1].zart[1] ? 2 : 0);
@@ -105,9 +111,12 @@ public class Field
                         mezok[i][j].vege[1] |= 0x01;
                     if(!mezok[i][j + 1].zart[1])
                         mezok[i][j].vege[1] |= 0x02;
-                    mezok[i - 1][j].vege[3] = mezok[i][j].vege[1];
+                    mezok[i - 1][j].vege[3] &= mezok[i][j].vege[1];
+                    mezok[i][j].vege[1] &= mezok[i - 1][j].vege[3];
                 }
-                if(mezok[i][j].zart[3])
+                else
+                    mezok[i - 1][j].vege[3] = mezok[i][j].vege[1] = 0;
+                if(mezok[i][j].zart[3] && !mezok[i][j].zart[0] && !mezok[i][j].zart[2])
                 {
                     //mezok[i][j].vege[3] = mezok[i + 1][j].vege[1] = (short) (!mezok[i][j - 1].zart[3] ? 1 :
                     //        !mezok[i][j + 1].zart[3] ? 2 : 0);
@@ -116,33 +125,45 @@ public class Field
                         mezok[i][j].vege[3] |= 0x01;
                     if(!mezok[i][j + 1].zart[3])
                         mezok[i][j].vege[3] |= 0x02;
-                    mezok[i + 1][j].vege[1] = mezok[i][j].vege[3];
+                    mezok[i + 1][j].vege[1] &= mezok[i][j].vege[3];
+                    mezok[i][j].vege[3] &= mezok[i + 1][j].vege[1];
                 }
+                else
+                    mezok[i + 1][j].vege[1] = mezok[i][j].vege[3] = 0;
             }
         }
+        //TODO: befejezni!!
         for(int i = 1; i < gridWidth; i++)
         {
-            if(mezok[i][0].zart[1])
+            mezok[i][0].vege[0] = 0;
+            if(mezok[i][0].zart[1] && !mezok[i][0].zart[0] && !mezok[i][0].zart[2])
             {
-                mezok[i][0].vege[1] = mezok[i - 1][0].vege[3] = (short) (!mezok[i][1].zart[1] ? 2 : 0);
+                mezok[i][0].vege[1] &= mezok[i - 1][0].vege[3] &= (short) (!mezok[i][1].zart[1] ? 2 : 0);
             }
-            if(mezok[i][gridHeigth - 1].zart[1])
+            else
+                mezok[i][0].vege[1] &= mezok[i - 1][0].vege[3] = 0;
+            if(mezok[i][gridHeigth - 1].zart[1] && !mezok[i][gridHeigth - 1].zart[0] && !mezok[i][gridHeigth - 1].zart[2])
             {
-                mezok[i][gridHeigth - 1].vege[1] = mezok[i - 1][gridHeigth - 1].vege[3] =
-                        (short) (!mezok[i][gridHeigth - 2].zart[1] ? 1 : 0);
+                mezok[i][gridHeigth - 1].vege[1] &= mezok[i - 1][gridHeigth - 1].vege[3] &= (short) (!mezok[i][gridHeigth - 2].zart[1] ? 1 : 0);
             }
+            else
+                mezok[i][gridHeigth - 1].vege[1] &= mezok[i - 1][gridHeigth - 1].vege[3] = 0;
         }
         for(int j = 1; j < gridHeigth; j++)
         {
-            if(mezok[0][j].zart[0])
+            mezok[0][j].vege[1] = 0;
+            if(mezok[0][j].zart[0] && !mezok[0][j].zart[1] && !mezok[0][j].zart[3])
             {
-                mezok[0][j].vege[0] = mezok[0][j - 1].vege[2] = (short) (!mezok[1][j].zart[0] ? 2 : 0);
+                mezok[0][j].vege[0] &= mezok[0][j - 1].vege[2] &= (short) (!mezok[1][j].zart[0] ? 2 : 0);
             }
-            if(mezok[gridWidth - 1][j].zart[0])
+            else
+                mezok[0][j].vege[0] &= mezok[0][j - 1].vege[2] = 0;
+            if(mezok[gridWidth - 1][j].zart[0] && !mezok[gridWidth - 1][j].zart[1] && !mezok[gridWidth - 1][j].zart[3])
             {
-                mezok[gridWidth - 1][j].vege[0] = mezok[gridWidth - 1][j - 1].vege[2] =
-                        (short) (!mezok[gridWidth - 2][j].zart[0] ? 1 : 0);
+                mezok[gridWidth - 1][j].vege[0] &= mezok[gridWidth - 1][j - 1].vege[2] &= (short) (!mezok[gridWidth - 2][j].zart[0] ? 1 : 0);
             }
+            else
+                mezok[gridWidth - 1][j].vege[0] &= mezok[gridWidth - 1][j - 1].vege[2] = 0;
         }
     }
     
