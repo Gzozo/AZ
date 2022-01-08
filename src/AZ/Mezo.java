@@ -1,9 +1,8 @@
 package AZ;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.util.Arrays;
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.json.*;
@@ -67,6 +66,21 @@ public class Mezo
         return json;
     }
     
+    void drawWall(Graphics g, int x1, int y1, int x2, int y2, int id)
+    {
+        if(vege[id] == 0)
+            g.drawLine(x1, y1, x2, y2);
+        int midx = (x1 + x2) / 2, midy = (y1 + y2) / 2;
+        if((vege[id] & 0x01) != 0)
+            g.setColor(Color.YELLOW);
+        g.drawLine(x1, y1, midx, midy);
+        g.setColor(Color.BLACK);
+        if((vege[id] & 0x02) != 0)
+            g.setColor(Color.YELLOW);
+        g.drawLine(midx, midy, x2, y2);
+        g.setColor(Color.BLACK);
+    }
+    
     /**
      * Kirajzolás
      *
@@ -77,44 +91,27 @@ public class Mezo
         // felso
         if(zart[0])
         {
-            if(vege[0] != 0)
-                g.setColor(Color.YELLOW);
-            g.drawLine(x * grid.intValue(), y * grid.intValue(), x * grid.intValue() + grid.intValue(),
-                    y * grid.intValue());
-            
-            if(vege[0] != 0)
-                g.setColor(Color.black);
+            drawWall(g, x * grid.intValue(), y * grid.intValue(), x * grid.intValue() + grid.intValue(),
+                    y * grid.intValue(), 0);
         }
         // bal
         if(zart[1])
         {
-            if(vege[1] != 0)
-                g.setColor(Color.YELLOW);
-            g.drawLine(x * grid.intValue(), y * grid.intValue(), x * grid.intValue(),
-                    y * grid.intValue() + grid.intValue());
-            if(vege[1] != 0)
-                g.setColor(Color.black);
+            drawWall(g, x * grid.intValue(), y * grid.intValue(), x * grid.intValue(),
+                    y * grid.intValue() + grid.intValue(), 1);
         }
         // alsó
         if(zart[2])
         {
-            if(vege[2] != 0)
-                g.setColor(Color.YELLOW);
-            g.drawLine(x * grid.intValue(), y * grid.intValue() + grid.intValue(),
-                    x * grid.intValue() + grid.intValue(), y * grid.intValue() + grid.intValue());
-            if(vege[2] != 0)
-                g.setColor(Color.black);
+            drawWall(g, x * grid.intValue(), y * grid.intValue() + grid.intValue(),
+                    x * grid.intValue() + grid.intValue(), y * grid.intValue() + grid.intValue(), 2);
         }
         // jobb
         if(zart[3])
         {
-            if(vege[3] != 0)
-                g.setColor(Color.YELLOW);
-            g.drawLine(x * grid.intValue() + grid.intValue(), y * grid.intValue(),
-                    x * grid.intValue() + grid.intValue(), y * grid.intValue() + grid.intValue());
+            drawWall(g, x * grid.intValue() + grid.intValue(), y * grid.intValue(),
+                    x * grid.intValue() + grid.intValue(), y * grid.intValue() + grid.intValue(), 3);
             
-            if(vege[3] != 0)
-                g.setColor(Color.black);
         }
     }
     
@@ -242,9 +239,27 @@ public class Mezo
                    int index)
     {
         short val = lineCircle(x1, y1, x2, y2, tx, ty, r);
-        if((val & 0x02) != 0 && vege[index] == ((val & 0x01) + 1))
+        if((val & 0x02) != 0 && (vege[index] & (1 << (val & 0x01))) != 0)
         {
-            ret = ret | 0x03;
+            if(index % 2 == 0)
+            {
+                /*if(x1 < tx && tx < x2)
+                    ret = ret | mask;
+                else
+                    ret = ret | (~mask) % 4;*/
+                //kell irany(+,-), koor(x,y)
+                //sarok x?(32), sarok y(16), x irany(8), y irany(4)
+                ret |= 0x32 | ((val & 0x01) << 3);
+                
+            }
+            else
+            {
+                /*if(y1 < ty && ty < y2)
+                    ret = ret | mask;
+                else
+                    ret = ret | (~mask) % 4;*/
+                ret |= 0x16 | ((val & 0x01) << 2);
+            }
         }
         else if((val & 0x01) != 0)
         {

@@ -160,13 +160,29 @@ public abstract class Ammo implements GameEntity
                     int ret = f.mezok[i][j].Collision(x, y, rad / 2);
                     if(ret != 0)
                     {
-                        if((ret & 1) != 0)
+                        if((ret & 0x48) == 0)
                         {
-                            touchx = true;
+                            if((ret & 1) != 0)
+                            {
+                                touchx = true;
+                            }
+                            if((ret & 2) != 0)
+                            {
+                                touchy = true;
+                            }
                         }
-                        if((ret & 2) != 0)
+                        else
                         {
-                            touchy = true;
+                            if((ret & 0x32) != 0)
+                                if((ret & 0x08) == 0)
+                                    touchx = speedx > 0;
+                                else
+                                    touchx = speedx < 0;
+                            if((ret & 0x16) != 0)
+                                if((ret & 0x04) == 0)
+                                    touchy = speedy > 0;
+                                else
+                                    touchy = speedy < 0;
                         }
                         hitwall = true;
                         if(music)

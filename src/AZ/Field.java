@@ -49,6 +49,103 @@ public class Field
     ArrayList<Mezo> elert;
     int elerni;
     
+    void CheckVege()
+    {
+        //első index: fal
+        //második: {i változás, j változás}
+        //int[][] sarkok = {{1, 0}, {}};
+        //TODO: Sarkok
+        for(int i = 1; i < gridWidth - 1; i++)
+        {
+            for(int j = 1; j < gridHeigth - 1; j++)
+            {
+                /*for(int fal = 0; fal < 4; fal++)
+                {
+                    if(mezok[i][j].zart[fal])
+                    {
+                        mezok[i][j].vege[fal] = 0;
+                        if(i - sarkok[fal][0] >= 0 && !mezok[i - sarkok[fal][0]][j].zart[fal])
+                        {
+                            mezok[i][j].vege[fal] |= 0x01;
+                        }
+                        if(i + sarkok[fal][0] < gridWidth && !mezok[i + sarkok[fal][0]][j].zart[fal])
+                        {
+                            mezok[i][j].vege[fal] |= 0x02;
+                        }
+                        mezok[i][j - 1].vege[(fal + 2) % 4] = mezok[i][j].vege[fal];
+                        
+                    }
+                }*/
+                if(mezok[i][j].zart[0])
+                {
+                    mezok[i][j].vege[0] = 0;
+                    if(!mezok[i - 1][j].zart[0])
+                        mezok[i][j].vege[0] |= 0x01;
+                    if(!mezok[i + 1][j].zart[0])
+                        mezok[i][j].vege[0] |= 0x02;
+                    mezok[i][j - 1].vege[2] = mezok[i][j].vege[0];
+                }
+                if(mezok[i][j].zart[2])
+                {
+                    //mezok[i][j].vege[2] = mezok[i][j + 1].vege[0] = (short) (!mezok[i - 1][j].zart[2] ? 1 :
+                    // !mezok[i + 1][j].zart[2] ? 2 : 0);
+                    mezok[i][j].vege[2] = 0;
+                    if(!mezok[i - 1][j].zart[2])
+                        mezok[i][j].vege[2] |= 0x01;
+                    if(!mezok[i + 1][j].zart[2])
+                        mezok[i][j].vege[2] |= 0x02;
+                    mezok[i][j + 1].vege[0] = mezok[i][j].vege[2];
+                }
+                if(mezok[i][j].zart[1])
+                {
+                    //mezok[i][j].vege[1] = mezok[i - 1][j].vege[3] = (short) (!mezok[i][j - 1].zart[1] ? 1 :
+                    //        !mezok[i][j + 1].zart[1] ? 2 : 0);
+                    mezok[i][j].vege[1] = 0;
+                    if(!mezok[i][j - 1].zart[1])
+                        mezok[i][j].vege[1] |= 0x01;
+                    if(!mezok[i][j + 1].zart[1])
+                        mezok[i][j].vege[1] |= 0x02;
+                    mezok[i - 1][j].vege[3] = mezok[i][j].vege[1];
+                }
+                if(mezok[i][j].zart[3])
+                {
+                    //mezok[i][j].vege[3] = mezok[i + 1][j].vege[1] = (short) (!mezok[i][j - 1].zart[3] ? 1 :
+                    //        !mezok[i][j + 1].zart[3] ? 2 : 0);
+                    mezok[i][j].vege[3] = 0;
+                    if(!mezok[i][j - 1].zart[3])
+                        mezok[i][j].vege[3] |= 0x01;
+                    if(!mezok[i][j + 1].zart[3])
+                        mezok[i][j].vege[3] |= 0x02;
+                    mezok[i + 1][j].vege[1] = mezok[i][j].vege[3];
+                }
+            }
+        }
+        for(int i = 1; i < gridWidth; i++)
+        {
+            if(mezok[i][0].zart[1])
+            {
+                mezok[i][0].vege[1] = mezok[i - 1][0].vege[3] = (short) (!mezok[i][1].zart[1] ? 2 : 0);
+            }
+            if(mezok[i][gridHeigth - 1].zart[1])
+            {
+                mezok[i][gridHeigth - 1].vege[1] = mezok[i - 1][gridHeigth - 1].vege[3] =
+                        (short) (!mezok[i][gridHeigth - 2].zart[1] ? 1 : 0);
+            }
+        }
+        for(int j = 1; j < gridHeigth; j++)
+        {
+            if(mezok[0][j].zart[0])
+            {
+                mezok[0][j].vege[0] = mezok[0][j - 1].vege[2] = (short) (!mezok[1][j].zart[0] ? 2 : 0);
+            }
+            if(mezok[gridWidth - 1][j].zart[0])
+            {
+                mezok[gridWidth - 1][j].vege[0] = mezok[gridWidth - 1][j - 1].vege[2] =
+                        (short) (!mezok[gridWidth - 2][j].zart[0] ? 1 : 0);
+            }
+        }
+    }
+    
     /**
      * Legenerálja a pályát
      *
@@ -87,34 +184,7 @@ public class Field
             attor(m.x, m.y, r.nextInt(4), true);
             megTorFal--;
         }
-        //TODO: Sarkok
-        for(int i = 1; i < gridWidth - 1; i++)
-        {
-            for(int j = 1; j < gridHeigth - 1; j++)
-            {
-                if(mezok[i][j].zart[0])
-                {
-                    mezok[i][j - 1].vege[2] = mezok[i][j].vege[0] = (short) (!mezok[i - 1][j].zart[0] ? 1 :
-                            !mezok[i + 1][j].zart[0] ? 2 : 0);
-                    
-                }
-                if(mezok[i][j].zart[2])
-                {
-                    mezok[i][j].vege[2] = mezok[i][j + 1].vege[0] = (short) (!mezok[i - 1][j].zart[2] ? 1 :
-                            !mezok[i + 1][j].zart[2] ? 2 : 0);
-                }
-                if(mezok[i][j].zart[1])
-                {
-                    mezok[i][j].vege[1] = mezok[i - 1][j].vege[3] = (short) (!mezok[i][j - 1].zart[1] ? 1 :
-                            !mezok[i][j + 1].zart[1] ? 2 : 0);
-                }
-                if(mezok[i][j].zart[3])
-                {
-                    mezok[i][j].vege[3] = mezok[i + 1][j].vege[1] = (short) (!mezok[i][j - 1].zart[3] ? 1 :
-                            !mezok[i][j + 1].zart[3] ? 2 : 0);
-                }
-            }
-        }
+        CheckVege();
         
         
     }
