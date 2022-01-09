@@ -66,10 +66,15 @@ public class Mezo
         return json;
     }
     
+    boolean debug = false;
+    
     void drawWall(Graphics g, int x1, int y1, int x2, int y2, int id)
     {
-        if(vege[id] == 0)
+        if(vege[id] == 0 || !debug)
+        {
             g.drawLine(x1, y1, x2, y2);
+            return;
+        }
         int midx = (x1 + x2) / 2, midy = (y1 + y2) / 2;
         if((vege[id] & 0x01) != 0)
             g.setColor(Color.YELLOW);

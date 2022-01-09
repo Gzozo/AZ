@@ -8,11 +8,7 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Panel;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.DatagramPacket;
@@ -188,6 +184,7 @@ public class Main implements Runnable
         
         openingFrame.setVisible(true);
         openingFrame.pack();
+        
         openingFrame.addWindowListener(new WindowAdapter()
         {
             
@@ -338,7 +335,16 @@ public class Main implements Runnable
         // frame.setResizable(false);
         frame.addKeyListener(game.new KeyboardListener());
         table.addKeyListener(game.new KeyboardListener());
-        frame.pack();
+        /*frame.addComponentListener(new ComponentAdapter()
+        {
+            @Override
+            public void componentResized(ComponentEvent e)
+            {
+                System.out.println(frame.getSize().toString());
+            }
+        });*/
+        //frame.pack();
+        frame.setSize(1272, 868);
         openingFrame.setFocusableWindowState(false);
         frame.requestFocus();
         // System.out.println(frame.getWidth() + " " + frame.getHeight());
