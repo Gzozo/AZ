@@ -133,6 +133,7 @@ public class Field
             }
         }
         //TODO: befejezni!!
+        mezok[0][0].vege[0] = mezok[0][0].vege[1] = 0;
         for(int i = 1; i < gridWidth; i++)
         {
             mezok[i][0].vege[0] = 0;
