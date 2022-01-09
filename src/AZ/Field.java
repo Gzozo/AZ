@@ -76,7 +76,7 @@ public class Field
                         
                     }
                 }*/
-                if(mezok[i][j].zart[0] && !mezok[i][j].zart[1] && !mezok[i][j].zart[3])
+                if(mezok[i][j].zart[0] /*&& !mezok[i][j].zart[1] && !mezok[i][j].zart[3]*/)
                 {
                     mezok[i][j].vege[0] = 0;
                     if(!mezok[i - 1][j].zart[0])
@@ -88,7 +88,7 @@ public class Field
                 }
                 else
                     mezok[i][j - 1].vege[2] = mezok[i][j].vege[0] = 0;
-                if(mezok[i][j].zart[2] && !mezok[i][j].zart[1] && !mezok[i][j].zart[3])
+                if(mezok[i][j].zart[2] /*&& !mezok[i][j].zart[1] && !mezok[i][j].zart[3]*/)
                 {
                     //mezok[i][j].vege[2] = mezok[i][j + 1].vege[0] = (short) (!mezok[i - 1][j].zart[2] ? 1 :
                     // !mezok[i + 1][j].zart[2] ? 2 : 0);
@@ -102,7 +102,7 @@ public class Field
                 }
                 else
                     mezok[i][j + 1].vege[0] = mezok[i][j].vege[2] = 0;
-                if(mezok[i][j].zart[1] && !mezok[i][j].zart[0] && !mezok[i][j].zart[2])
+                if(mezok[i][j].zart[1] /*&& !mezok[i][j].zart[0] && !mezok[i][j].zart[2]*/)
                 {
                     //mezok[i][j].vege[1] = mezok[i - 1][j].vege[3] = (short) (!mezok[i][j - 1].zart[1] ? 1 :
                     //        !mezok[i][j + 1].zart[1] ? 2 : 0);
@@ -116,7 +116,7 @@ public class Field
                 }
                 else
                     mezok[i - 1][j].vege[3] = mezok[i][j].vege[1] = 0;
-                if(mezok[i][j].zart[3] && !mezok[i][j].zart[0] && !mezok[i][j].zart[2])
+                if(mezok[i][j].zart[3] /*&& !mezok[i][j].zart[0] && !mezok[i][j].zart[2]*/)
                 {
                     //mezok[i][j].vege[3] = mezok[i + 1][j].vege[1] = (short) (!mezok[i][j - 1].zart[3] ? 1 :
                     //        !mezok[i][j + 1].zart[3] ? 2 : 0);

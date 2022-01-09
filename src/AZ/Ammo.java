@@ -160,7 +160,7 @@ public abstract class Ammo implements GameEntity
                     int ret = f.mezok[i][j].Collision(x, y, rad / 2);
                     if(ret != 0)
                     {
-                        if((ret & 0x48) == 0)
+                        if((ret & 48) == 0)
                         {
                             if((ret & 1) != 0)
                             {
@@ -173,13 +173,13 @@ public abstract class Ammo implements GameEntity
                         }
                         else
                         {
-                            if((ret & 0x32) != 0)
+                            if((ret & 32) != 0)
                                 if((ret & 0x08) == 0)
                                     touchx = speedx > 0;
                                 else
                                     touchx = speedx < 0;
-                            if((ret & 0x16) != 0)
-                                if((ret & 0x04) == 0)
+                            if((ret & 16) != 0)
+                                if((ret & 04) == 0)
                                     touchy = speedy > 0;
                                 else
                                     touchy = speedy < 0;
@@ -190,13 +190,14 @@ public abstract class Ammo implements GameEntity
                             music = false;
                             // manager.PlayMusic(Const.Music.hitWall);
                         }
-                        break kulso;
+                        //break kulso;
                     }
                 }
             }
         }
         //Maybe do not generate value all the time?
         double dist = new Random().nextDouble() * changeDir - changeDir / 2;
+        //double dist = 0;
         if(touchy)
         {
             setRot(-rot + dist);
@@ -204,6 +205,7 @@ public abstract class Ammo implements GameEntity
         if(touchx)
         {
             setRot(Math.PI - rot + dist);
+            System.out.println("TouchX");
         }
         if(!hitwall)
             music = true;

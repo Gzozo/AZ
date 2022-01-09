@@ -66,7 +66,7 @@ public class Mezo
         return json;
     }
     
-    boolean debug = false;
+    boolean debug = Settings.DEBUG;
     
     void drawWall(Graphics g, int x1, int y1, int x2, int y2, int id)
     {
@@ -244,8 +244,9 @@ public class Mezo
                    int index)
     {
         short val = lineCircle(x1, y1, x2, y2, tx, ty, r);
-        if((val & 0x02) != 0 && (vege[index] & (1 << (val & 0x01))) != 0)
+        if((val & 02) != 0 && (vege[index] & (1 << (val & 01))) != 0)
         {
+            System.out.println("Corner " + index + " " + val);
             if(index % 2 == 0)
             {
                 /*if(x1 < tx && tx < x2)
@@ -254,7 +255,8 @@ public class Mezo
                     ret = ret | (~mask) % 4;*/
                 //kell irany(+,-), koor(x,y)
                 //sarok x?(32), sarok y(16), x irany(8), y irany(4)
-                ret |= 0x32 | ((val & 0x01) << 3);
+                ret |= 32 | ((val & 01) << 3);
+                System.out.println(ret);
                 
             }
             else
@@ -263,7 +265,7 @@ public class Mezo
                     ret = ret | mask;
                 else
                     ret = ret | (~mask) % 4;*/
-                ret |= 0x16 | ((val & 0x01) << 2);
+                ret |= 16 | ((val & 01) << 2);
             }
         }
         else if((val & 0x01) != 0)
