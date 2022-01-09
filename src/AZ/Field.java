@@ -54,7 +54,6 @@ public class Field
         //első index: fal
         //második: {i változás, j változás}
         //int[][] sarkok = {{1, 0}, {}};
-        //TODO: Sarkok
         for(int i = 1; i < gridWidth - 1; i++)
         {
             for(int j = 1; j < gridHeigth - 1; j++)
@@ -132,7 +131,6 @@ public class Field
                     mezok[i + 1][j].vege[1] = mezok[i][j].vege[3] = 0;
             }
         }
-        //TODO: befejezni!!
         mezok[0][0].vege[0] = mezok[0][0].vege[1] = 0;
         for(int i = 1; i < gridWidth; i++)
         {
