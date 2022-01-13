@@ -13,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.Serial;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -30,14 +31,15 @@ import javax.swing.*;
 import com.sun.source.tree.Tree;
 import org.json.JSONArray;
 import org.json.JSONObject;
-//TODO: Refactor whole class, it should only do drawing and input
 
 /**
  * Kliens
  */
+@SuppressWarnings("ALL")
 public class GamePanel extends JPanel implements GameManager
 {
     
+    @Serial
     private static final long serialVersionUID = 1L;
     
     ArrayList<Tank> players = new ArrayList<>();
@@ -127,7 +129,7 @@ public class GamePanel extends JPanel implements GameManager
          * activePlayer = players.get(0);
          */
         
-        new Thread(() -> Listening()).start();
+        new Thread(this::Listening).start();
         new Thread(() ->
         {
             while(true)
@@ -207,7 +209,7 @@ public class GamePanel extends JPanel implements GameManager
         byte[] buf = new byte[packetSize];
         dp.setData(buf);
         dp.setLength(packetSize);
-        JSONObject receive = new JSONObject();
+        JSONObject receive;
         while(true)
         {
             try
@@ -508,8 +510,6 @@ public class GamePanel extends JPanel implements GameManager
                     break;
                 }
             }
-            //TODO: Rework client, move (and maybe fire) should be calculated on Client
-            //TODO: Server side TCP package for the important packages
             if(!dead)
                 SendKeys(e, true);
             k.processKey(e.getKeyCode());

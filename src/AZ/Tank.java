@@ -42,9 +42,7 @@ public class Tank implements GameEntity
     GameManager manager;
     Ammo ammo;
     
-    //TODO: Smaller tanks
     //TODO: Default ctor (maybe?)
-    //TODO: Finer rotate with pressed keys
     public Tank(int x, int y, int rectWidth, int rectHeight, String s, Field f, AtomicInteger grid, GameManager panel)
     {
         this.x = prevX = x;

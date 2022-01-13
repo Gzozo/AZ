@@ -250,8 +250,6 @@ public class Main implements Runnable
      */
     public void Client(String IpAddress, int port)
     {
-        //TODO: Ammo counter
-        //TODO: Name Selection
         GamePanel game;
         DatagramSocket test = null;
         int testPort = 6969;

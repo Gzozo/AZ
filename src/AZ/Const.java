@@ -1,6 +1,5 @@
 package AZ;
 
-//TODO: Rework, group Strings, maybe enum?
 
 /**
  * statikus Stringek, amik file neveket, vagy JSON kulcsokat jelölnek

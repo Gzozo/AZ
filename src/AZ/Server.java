@@ -204,7 +204,6 @@ public class Server extends Thread implements GameManager
      */
     String AllData()
     {
-        //TODO: Music only played on client, client based movement
         JSONObject ret = new JSONObject();
         JSONObject entity = new JSONObject();
         for(int i = 0; i < entities.size(); i++)
