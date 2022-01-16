@@ -13,13 +13,8 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -307,10 +302,19 @@ public class Server extends Thread implements GameManager
                         else
                         {
                             Client c = new Client(t);
-                            c.name = receive.optString(Const.name, "Player" + (players.size() + 1));
-                            int sum = players.values().stream().mapToInt(client -> client.name == c.name ? 1 : 0).sum();
+                            String name = receive.optString(Const.name, "Player" + (players.size() + 1));
+                            String nameCheck = name;
+                            int num = 1;
+                            while(players.hasName(nameCheck))
+                            {
+                                num++;
+                                nameCheck = name + num;
+                            }
+                            c.name = nameCheck;
+                            /*int sum = players.values().stream().mapToInt(client -> client.name == c.name ? 1 : 0)
+                            .sum();
                             if(sum > 0)
-                                c.name += "" + (sum + 1);
+                                c.name += "" + (sum + 1);*/
                             c.picture = kep;
                             players.put(packet.getSocketAddress(), c);
                             System.out.println("New Player: " + packet.getSocketAddress());

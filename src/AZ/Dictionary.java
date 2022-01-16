@@ -83,4 +83,9 @@ public class Dictionary
         return cli2soc.size();
     }
     
+    public boolean hasName(String name)
+    {
+        return cli2soc.keySet().stream().anyMatch(x -> x.name.equals(name));
+    }
+    
 }
