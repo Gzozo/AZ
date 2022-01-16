@@ -1,6 +1,5 @@
 package AZ;
 
-
 /**
  * statikus Stringek, amik file neveket, vagy JSON kulcsokat jelölnek
  */
