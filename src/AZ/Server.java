@@ -69,7 +69,7 @@ public class Server extends Thread implements GameManager
     // DatagramSocket sender = null;
     Field f;
     final int width = 20, height = 20;
-    final int _tankWidth = 25, _tankHeight = 35;
+    final int _tankWidth = 20, _tankHeight = 28;
     final int _gridSize = 50;
     final int minPlayer = 2;
     final Dimension refer = new Dimension(800, 800);
