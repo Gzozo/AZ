@@ -73,10 +73,10 @@ public class GamePanel extends JPanel implements GameManager
     
     public GamePanel(InetAddress serverIp, int serverPort, int port) throws IOException
     {
-        this(serverIp, serverPort, port, "");
+        this(serverIp, serverPort, port, "", "");
     }
     
-    public GamePanel(InetAddress serverIp, int serverPort, int port, String pic) throws IOException
+    public GamePanel(InetAddress serverIp, int serverPort, int port, String pic, String name) throws IOException
     {
         super();
         tankPic = pic;
@@ -98,6 +98,7 @@ public class GamePanel extends JPanel implements GameManager
         this.serverIp = serverIp;
         JSONObject send = new JSONObject();
         send.put(Const.join, tankPic);
+        send.put(Const.name, name);
         dp = new DatagramPacket(send.toString().getBytes(), send.toString().getBytes().length, serverIp, serverPort);
         client.send(dp);
         byte[] buf = new byte[packetSize];

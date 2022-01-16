@@ -9,7 +9,7 @@ import java.util.Random;
 public class Minigun extends Ammo
 {
     Random r = new Random();
-    double szoras = Settings.szoras;
+    double szoras = AZ.Settings.szoras;
     
     public Minigun(double x, double y, double rot, Field f)
     {

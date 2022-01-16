@@ -309,7 +309,7 @@ public class Main implements Runnable
             return;
         }
         
-        JFrame frame = new JFrame(title);
+        JFrame frame = new JFrame(title + " " + name);
         ImageIcon img = new ImageIcon(Main.class.getResource(Const.Resources + Const.IconFile));
         frame.setIconImage(img.getImage());
         try
@@ -317,7 +317,7 @@ public class Main implements Runnable
             // game = new GamePanel(Inet4Address.getByName("152.66.180.194"), 6666, 6969);
             
             int select = Integer.parseInt(tanks.getSelection().getActionCommand());
-            game = new GamePanel(Inet4Address.getByName(IpAddress), port, 6969, Server.pics[select]);
+            game = new GamePanel(Inet4Address.getByName(IpAddress), port, 6969, Server.pics[select], name);
             
         }
         catch(IOException e1)
