@@ -244,9 +244,8 @@ public class Mezo
                    int index)
     {
         short val = lineCircle(x1, y1, x2, y2, tx, ty, r);
-        if((val & 02) != 0 && (vege[index] & (1 << (val & 01))) != 0)
+        if((val & 2) != 0 && (vege[index] & (1 << (val & 1))) != 0)
         {
-            System.out.println("Corner " + index + " " + val);
             if(index % 2 == 0)
             {
                 /*if(x1 < tx && tx < x2)
@@ -255,8 +254,7 @@ public class Mezo
                     ret = ret | (~mask) % 4;*/
                 //kell irany(+,-), koor(x,y)
                 //sarok x?(32), sarok y(16), x irany(8), y irany(4)
-                ret |= 32 | ((val & 01) << 3);
-                System.out.println(ret);
+                ret |= 32 | ((val & 1) << 3);
                 
             }
             else
@@ -265,7 +263,7 @@ public class Mezo
                     ret = ret | mask;
                 else
                     ret = ret | (~mask) % 4;*/
-                ret |= 16 | ((val & 01) << 2);
+                ret |= 16 | ((val & 1) << 2);
             }
         }
         else if((val & 0x01) != 0)

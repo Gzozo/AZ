@@ -205,7 +205,6 @@ public abstract class Ammo implements GameEntity
         if(touchx)
         {
             setRot(Math.PI - rot + dist);
-            System.out.println("TouchX");
         }
         if(!hitwall)
             music = true;
