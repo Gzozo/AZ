@@ -197,7 +197,6 @@ public abstract class Ammo implements GameEntity
         }
         //Maybe do not generate value all the time?
         double dist = new Random().nextDouble() * changeDir - changeDir / 2;
-        //double dist = 0;
         if(touchy)
         {
             setRot(-rot + dist);
