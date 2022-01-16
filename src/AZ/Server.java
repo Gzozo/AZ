@@ -337,6 +337,7 @@ public class Server extends Thread implements GameManager
                         config.put(Const.tankHeight, _tankHeight);
                         config.put(Const.panelWidth, refer.width);
                         config.put(Const.panelHeight, refer.height);
+                        config.put(Const.name, players.get(packet.getSocketAddress()).name);
                         ret.put(Const.config, config);
                         Signal signal = new Signal(f.mezok[x][y].centerx(), f.mezok[x][y].centery(), 200,
                                 Math.max(t.rectWidth, t.rectHeight), 0, Color.red);

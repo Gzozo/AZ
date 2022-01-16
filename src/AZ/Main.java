@@ -309,7 +309,7 @@ public class Main implements Runnable
             return;
         }
         
-        JFrame frame = new JFrame(title + " " + name);
+        JFrame frame = new JFrame(title);
         ImageIcon img = new ImageIcon(Main.class.getResource(Const.Resources + Const.IconFile));
         frame.setIconImage(img.getImage());
         try

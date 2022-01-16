@@ -63,7 +63,7 @@ public class GamePanel extends JPanel implements GameManager
     int serverPort;
     
     boolean dead = false;
-    String tankPic;
+    String tankPic, name;
     Konami k = new Konami();
     
     public JLabel state = null;
@@ -170,6 +170,7 @@ public class GamePanel extends JPanel implements GameManager
         _tankWidth = config.getInt(Const.tankWidth);
         _tankHeight = config.getInt(Const.tankHeight);
         d.setSize(config.getInt(Const.panelWidth), config.getInt(Const.panelHeight));
+        name = config.getString(Const.name);
         setSize(d);
         setPreferredSize(getSize());
         maze = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
@@ -199,6 +200,7 @@ public class GamePanel extends JPanel implements GameManager
                 super.windowClosing(e);
             }
         });
+        topFrame.setTitle(topFrame.getTitle() + " " + name);
         topFrame.requestFocus();
     }
     
@@ -294,7 +296,8 @@ public class GamePanel extends JPanel implements GameManager
         {
             dead = false;
             JSONObject send = new JSONObject();
-            send.put("Join", tankPic);
+            send.put(Const.join, tankPic);
+            send.put(Const.name, name);
             DatagramPacket data = new DatagramPacket(send.toString().getBytes(), send.toString().getBytes().length,
                     serverIp, serverPort);
             client.send(data);
