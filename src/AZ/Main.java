@@ -55,11 +55,12 @@ public class Main implements Runnable
         
         JButton client = new JButton("Client");
         JButton server = new JButton("Server");
-        JPanel buttons = new JPanel(), topeast = new JPanel(), topwest = new JPanel(), top = new JPanel();
+        JPanel buttons = new JPanel(), topEast = new JPanel(), topWest = new JPanel(), topCenter = new JPanel(), top
+                = new JPanel();
         JTextField serverIP = new JTextField("152.66.180.194", 16), serverPort = new JTextField("6666", 5),
-                createServerPort = new JTextField("6666", 5);
+                createServerPort = new JTextField("6666", 5), playerNameText = new JTextField("Player", 16);
         JLabel serverIPLabel = new JLabel("Szerver IP címe:"), serverPortLabel = new JLabel("Szerver portja: "),
-                createServerPortLabel = new JLabel("Szerver nyitása ezen a porton:");
+                createServerPortLabel = new JLabel("Szerver nyitása ezen a porton:"), playerName = new JLabel("Játékos név: ");
         JMenuBar bar = new JMenuBar();
         JMenu menu = new JMenu("Settings");
         JMenuItem controls = new JMenuItem("Controls");
@@ -73,7 +74,7 @@ public class Main implements Runnable
             System.out.println(Const.ConfigFile);
             //BufferedReader br = new BufferedReader(new InputStreamReader(Main.class.getResourceAsStream(Const
             // .ConfigFile)));
-            BufferedReader br = new BufferedReader(new FileReader(new File(Const.ConfigFile)));
+            BufferedReader br = new BufferedReader(new FileReader(Const.ConfigFile));
             String read = br.readLine(), file = "";
             while(read != null)
             {
@@ -85,6 +86,7 @@ public class Main implements Runnable
             serverIP.setText(json.optString(Const.ServerIP));
             serverPort.setText(json.optString(Const.ServerPort));
             createServerPort.setText(json.optString(Const.ClientPort));
+            playerNameText.setText(json.optString(Const.playerName));
             selected = json.optInt(Const.Selected, 0);
             Controls.ReadJSON(json);
             
@@ -150,7 +152,7 @@ public class Main implements Runnable
                     {
                         return;
                     }
-                    Client(serverIP.getText(), Integer.parseInt(text));
+                    Client(serverIP.getText(), Integer.parseInt(text), playerNameText.getText());
                 }
                 else if(e.getActionCommand().equals("Controls"))
                 {
@@ -164,19 +166,31 @@ public class Main implements Runnable
         controls.setActionCommand("Controls");
         controls.addActionListener(new Listener());
         
-        topwest.add(serverIPLabel);
-        topwest.add(serverIP);
-        topwest.add(serverPortLabel);
-        topwest.add(serverPort);
-        topeast.add(createServerPortLabel);
-        topeast.add(createServerPort);
+        topWest.add(serverIPLabel);
+        topWest.add(serverIP);
+        topWest.add(serverPortLabel);
+        topWest.add(serverPort);
+        
+        topEast.add(createServerPortLabel);
+        topEast.add(createServerPort);
+        
+        topCenter.add(playerName);
+        topCenter.add(playerNameText);
+        
         buttons.add(client);
         buttons.add(server);
+        
         menu.add(controls);
+        
         bar.add(menu);
         
-        top.add(topwest);
-        top.add(topeast);
+        top.setLayout(new BorderLayout());
+        JPanel toptop = new JPanel();
+        toptop.add(topWest);
+        toptop.add(topEast);
+        top.add(toptop, BorderLayout.NORTH);
+        top.add(topCenter, BorderLayout.CENTER);
+        
         openingFrame.setJMenuBar(bar);
         openingFrame.add(top, BorderLayout.NORTH);
         openingFrame.add(buttons, BorderLayout.SOUTH);
@@ -198,6 +212,7 @@ public class Main implements Runnable
                     json.put(Const.ServerIP, serverIP.getText());
                     json.put(Const.ServerPort, serverPort.getText());
                     json.put(Const.ClientPort, createServerPort.getText());
+                    json.put(Const.playerName, playerNameText.getText());
                     int select = Integer.parseInt(tanks.getSelection().getActionCommand());
                     json.put(Const.Selected, select);
                     Controls.WriteJSON(json);
@@ -248,7 +263,7 @@ public class Main implements Runnable
      * @param IpAddress A szerver gép IP címe
      * @param port      A szerver port száma
      */
-    public void Client(String IpAddress, int port)
+    public void Client(String IpAddress, int port, String name)
     {
         GamePanel game;
         DatagramSocket test = null;

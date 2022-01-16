@@ -9,7 +9,8 @@ public class Const
     static String Resources = "/resources/";
     static String ConfigFile = "src/resources/config.ini";
     static String IconFile = "az.png";
-    static String ServerIP = "IP", ServerPort = "Port", ClientPort = "CPort", Selected = "Tank", Keys = "Keys";
+    static String ServerIP = "IP", ServerPort = "Port", ClientPort = "CPort", Selected = "Tank", Keys = "Keys",
+            playerName = "Name";
     
     public static class Music
     {
