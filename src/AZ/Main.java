@@ -327,7 +327,8 @@ public class Main implements Runnable
         }
         JLabel gameState = new JLabel("", SwingConstants.CENTER);
         JTable table = new JTable();
-        JLabel ammoType = new JLabel(), ammoCount = new JLabel(), ammoText=new JLabel();
+        JLabel ammoType = new JLabel(), ammoCount = new JLabel(), ammoTextType = new JLabel("Ammo type: "),
+                ammoTextCount = new JLabel("Ammo count: ");
         gameState.setFont(new Font("Serif", Font.PLAIN, 20));
         // JPanel panel = new JPanel();
         // panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
