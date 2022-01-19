@@ -1,13 +1,6 @@
 package AZ;
 
-import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Font;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.Panel;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -327,15 +320,19 @@ public class Main implements Runnable
         }
         JLabel gameState = new JLabel("", SwingConstants.CENTER);
         JTable table = new JTable();
-        JLabel ammoType = new JLabel(), ammoCount = new JLabel(), ammoTextType = new JLabel("Ammo type: "),
+        JLabel ammoType = new JLabel(), ammoCount = new JLabel("10"), ammoTextType = new JLabel("Ammo type: "),
                 ammoTextCount = new JLabel("Ammo count: ");
+        ammoType.setName("ammoType");
+        ammoCount.setName("ammoCount");
         gameState.setFont(new Font("Serif", Font.PLAIN, 20));
-        // JPanel panel = new JPanel();
-        // panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        ammoType.setFont(new Font("Serif", Font.PLAIN, 20));
+        ammoCount.setFont(new Font("Serif", Font.PLAIN, 20));
+        ammoTextType.setFont(new Font("Serif", Font.PLAIN, 20));
+        ammoTextCount.setFont(new Font("Serif", Font.PLAIN, 20));
+        JPanel east = new JPanel(), texts = new JPanel();
+        east.setLayout(new BorderLayout());
+        
         game.state = gameState;
-        // panel.add(gameState);
-        // frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(),
-        // BoxLayout.Y_AXIS));
         frame.add(gameState, BorderLayout.SOUTH);
         frame.add(game, BorderLayout.CENTER);
         game.InitAfterFrame();
@@ -343,13 +340,18 @@ public class Main implements Runnable
         table.setModel(new StatTableModel(game));
         table.setFillsViewportHeight(true);
         JScrollPane pane = new JScrollPane(table);
-        frame.add(pane, BorderLayout.EAST);
+        east.add(pane, BorderLayout.CENTER);
+        texts.add(ammoTextType);
+        texts.add(ammoType);
+        texts.add(ammoTextCount);
+        texts.add(ammoCount);
+        east.add(texts, BorderLayout.SOUTH);
+        frame.add(east, BorderLayout.EAST);
+        for(Component c : ESwing.getAllComponents(frame))
+            System.out.println(c.getName());
         
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        // frame.setSize(game.getWidth(), game.getHeight() + gameState.getHeight() +
-        // frame.getHeight() + 10);
         frame.setVisible(true);
-        // frame.setResizable(false);
         frame.addKeyListener(game.new KeyboardListener());
         table.addKeyListener(game.new KeyboardListener());
         /*frame.addComponentListener(new ComponentAdapter()
