@@ -123,10 +123,7 @@ public class Server extends Thread implements GameManager
         {
             f.GenerateField();
             players.values().removeIf(x -> !x.joined);
-            entities.removeIf(x ->
-            {
-                return x instanceof PowerUp;
-            });
+            entities.removeIf(x -> x instanceof PowerUp);
             JSONObject rejoin = new JSONObject();
             rejoin.put(Const.rejoin, true);
             DatagramPacket dp = new DatagramPacket(rejoin.toString().getBytes(), rejoin.toString().getBytes().length);
