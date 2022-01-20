@@ -17,4 +17,17 @@ public class ESwing
         }
         return compList;
     }
+    
+    public static Component getComponent(final Container c, String name)
+    {
+        Component[] comps = c.getComponents();
+        for(Component comp : comps)
+        {
+            if(comp.getName().equals(name))
+                return comp;
+            if(comp instanceof Container)
+                return getComponent((Container) comp, name);
+        }
+        return null;
+    }
 }
