@@ -15,6 +15,7 @@ public class Sharpnel extends Ammo
         cooldown = 80;
         c = Color.GRAY;
         name = "Sharpnel";
+        shellCount = 3;
     }
     
     public Sharpnel()

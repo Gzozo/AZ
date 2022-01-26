@@ -28,6 +28,7 @@ public class HE extends Ammo
         cooldown = 120;
         c = Color.ORANGE;
         name = "HE";
+        shellCount = 2;
     }
     
     /**
