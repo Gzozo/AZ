@@ -15,6 +15,7 @@ public class Minigun extends Ammo
     {
         super(x, y, 3, 2, rot, 500, f);
         setPic("minigun.png");
+        type = "minigun";
         cooldown = 1;
         c = Color.GRAY;
         shellCount = 50;

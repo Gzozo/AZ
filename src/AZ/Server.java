@@ -323,7 +323,7 @@ public class Server extends Thread implements GameManager
                         
                         if(state == GameState.JOINING && players.values().stream().mapToInt(c -> c.joined ? 1 : 0).sum() >= minPlayer)
                         {
-                            scheduler.schedule(() -> StartGame(), 5, TimeUnit.SECONDS);
+                            scheduler.schedule(this::StartGame, 5, TimeUnit.SECONDS);
                             state = GameState.STARTING;
                         }
                         
@@ -338,6 +338,7 @@ public class Server extends Thread implements GameManager
                         config.put(Const.panelWidth, refer.width);
                         config.put(Const.panelHeight, refer.height);
                         config.put(Const.name, players.get(packet.getSocketAddress()).name);
+                        config.put(Const.Tank, t.toJSON());
                         ret.put(Const.config, config);
                         Signal signal = new Signal(f.mezok[x][y].centerx(), f.mezok[x][y].centery(), 200,
                                 Math.max(t.rectWidth, t.rectHeight), 0, Color.red);

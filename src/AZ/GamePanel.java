@@ -181,7 +181,7 @@ public class GamePanel extends JPanel implements GameManager
         moving = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
         effects = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
         pixels = new int[(int) (d.getWidth() * d.getHeight())];
-        
+        activePlayer.setFromJSON(config.getJSONObject(Const.Tank));
         Arrays.fill(pixels, 0);
     }
     
