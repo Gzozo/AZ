@@ -245,8 +245,8 @@ public class Server extends Thread implements GameManager
     public void run()
     {
         
-        scheduler.scheduleWithFixedDelay(() -> ManageGame(), 0, 33, TimeUnit.MILLISECONDS);
-        scheduler.scheduleWithFixedDelay(() -> Tick(), 0, 17, TimeUnit.MILLISECONDS);
+        scheduler.scheduleWithFixedDelay(this::ManageGame, 0, 33, TimeUnit.MILLISECONDS);
+        scheduler.scheduleWithFixedDelay(this::Tick, 0, 17, TimeUnit.MILLISECONDS);
         System.out.println("Listening " + ReceivePort);
         try
         {
@@ -273,81 +273,9 @@ public class Server extends Thread implements GameManager
                     String s = new String(buf);
                     JSONObject receive = new JSONObject(s);
                     // System.out.println(receive);
-                    JSONObject ret = new JSONObject();
                     if(receive.has(Const.join))
                     {
-                        Random r = new Random();
-                        int x = r.nextInt(width);
-                        int y = r.nextInt(height);
-                        
-                        String pic = receive.getString(Const.join);
-                        String kep = pic;
-                        
-                        if(!Arrays.stream(pics).anyMatch(d -> d.equals(pic)))
-                        {
-                            // pic = pics[r.nextInt(pics.length)];
-                            kep = pics[r.nextInt(pics.length)];
-                        }
-                        Tank t = new Tank(0, 0, _tankWidth * gridSize.intValue() / _gridSize,
-                                _tankHeight * gridSize.intValue() / _gridSize, kep, f, gridSize, this);
-                        
-                        t.setCenterx(f.mezok[x][y].centerx());
-                        t.setCentery(f.mezok[x][y].centery());
-                        
-                        if(players.contains(packet.getSocketAddress()))
-                        {
-                            players.get(packet.getSocketAddress()).t = t;
-                            players.get(packet.getSocketAddress()).joined = true;
-                        }
-                        else
-                        {
-                            Client c = new Client(t);
-                            String name = receive.optString(Const.name, "Player" + (players.size() + 1));
-                            String nameCheck = name;
-                            int num = 1;
-                            while(players.hasName(nameCheck))
-                            {
-                                num++;
-                                nameCheck = name + num;
-                            }
-                            c.name = nameCheck;
-                            /*int sum = players.values().stream().mapToInt(client -> client.name == c.name ? 1 : 0)
-                            .sum();
-                            if(sum > 0)
-                                c.name += "" + (sum + 1);*/
-                            c.picture = kep;
-                            players.put(packet.getSocketAddress(), c);
-                            System.out.println("New Player: " + packet.getSocketAddress());
-                            PlayMusic(Const.Music.playerJoined);
-                        }
-                        
-                        if(state == GameState.JOINING && players.values().stream().mapToInt(c -> c.joined ? 1 : 0).sum() >= minPlayer)
-                        {
-                            scheduler.schedule(this::StartGame, 5, TimeUnit.SECONDS);
-                            state = GameState.STARTING;
-                        }
-                        
-                        JSONObject config = new JSONObject();
-                        
-                        config.put(Const.labirintusSeed, f.seed);
-                        config.put(Const.gridSize, gridSize.intValue());
-                        config.put(Const.width, width);
-                        config.put(Const.height, height);
-                        config.put(Const.tankWidth, _tankWidth);
-                        config.put(Const.tankHeight, _tankHeight);
-                        config.put(Const.panelWidth, refer.width);
-                        config.put(Const.panelHeight, refer.height);
-                        config.put(Const.name, players.get(packet.getSocketAddress()).name);
-                        config.put(Const.Tank, t.toJSON());
-                        ret.put(Const.config, config);
-                        Signal signal = new Signal(f.mezok[x][y].centerx(), f.mezok[x][y].centery(), 200,
-                                Math.max(t.rectWidth, t.rectHeight), 0, Color.red);
-                        ret.put(Const.highlight, signal.toJSON());
-                        
-                        DatagramPacket respond = new DatagramPacket(ret.toString().getBytes(),
-                                ret.toString().length(), packet.getAddress(), packet.getPort());
-                        server.send(respond);
-                        statsChanged = true;
+                        Join(packet, receive);
                     }
                     if(receive.has(Const.keyboard))
                     {
@@ -387,6 +315,83 @@ public class Server extends Thread implements GameManager
         }
         scheduler.shutdown();
         server.close();
+    }
+    
+    private void Join(DatagramPacket packet, JSONObject receive) throws IOException
+    {
+        Random r = new Random();
+        int x = r.nextInt(width);
+        int y = r.nextInt(height);
+        
+        String pic = receive.getString(Const.join);
+        String kep = pic;
+        
+        if(Arrays.stream(pics).noneMatch(d -> d.equals(pic)))
+        {
+            // pic = pics[r.nextInt(pics.length)];
+            kep = pics[r.nextInt(pics.length)];
+        }
+        Tank t = new Tank(0, 0, _tankWidth * gridSize.intValue() / _gridSize,
+                _tankHeight * gridSize.intValue() / _gridSize, kep, f, gridSize, this);
+        
+        t.setCenterx(f.mezok[x][y].centerx());
+        t.setCentery(f.mezok[x][y].centery());
+        
+        if(players.contains(packet.getSocketAddress()))
+        {
+            players.get(packet.getSocketAddress()).t = t;
+            players.get(packet.getSocketAddress()).joined = true;
+        }
+        else
+        {
+            Client c = new Client(t);
+            String name = receive.optString(Const.name, "Player" + (players.size() + 1));
+            String nameCheck = name;
+            int num = 1;
+            while(players.hasName(nameCheck))
+            {
+                num++;
+                nameCheck = name + num;
+            }
+            c.name = nameCheck;
+            /*int sum = players.values().stream().mapToInt(client -> client.name == c.name ? 1 : 0)
+            .sum();
+            if(sum > 0)
+                c.name += "" + (sum + 1);*/
+            c.picture = kep;
+            players.put(packet.getSocketAddress(), c);
+            System.out.println("New Player: " + packet.getSocketAddress());
+            PlayMusic(Const.Music.playerJoined);
+        }
+        
+        if(state == GameState.JOINING && players.values().stream().mapToInt(c -> c.joined ? 1 : 0).sum() >= minPlayer)
+        {
+            scheduler.schedule(this::StartGame, 5, TimeUnit.SECONDS);
+            state = GameState.STARTING;
+        }
+        
+        JSONObject ret = new JSONObject();
+        JSONObject config = new JSONObject();
+        
+        config.put(Const.labirintusSeed, f.seed);
+        config.put(Const.gridSize, gridSize.intValue());
+        config.put(Const.width, width);
+        config.put(Const.height, height);
+        config.put(Const.tankWidth, _tankWidth);
+        config.put(Const.tankHeight, _tankHeight);
+        config.put(Const.panelWidth, refer.width);
+        config.put(Const.panelHeight, refer.height);
+        config.put(Const.name, players.get(packet.getSocketAddress()).name);
+        config.put(Const.Tank, t.toJSON());
+        ret.put(Const.config, config);
+        Signal signal = new Signal(f.mezok[x][y].centerx(), f.mezok[x][y].centery(), 200, Math.max(t.rectWidth,
+                t.rectHeight), 0, Color.red);
+        ret.put(Const.highlight, signal.toJSON());
+        
+        DatagramPacket respond = new DatagramPacket(ret.toString().getBytes(), ret.toString().length(),
+                packet.getAddress(), packet.getPort());
+        server.send(respond);
+        statsChanged = true;
     }
     
     /**

@@ -46,7 +46,7 @@ public class GamePanel extends JPanel implements GameManager
     ArrayList<GameEntity> entities = new ArrayList<>();
     ArrayList<GameEntity> localEffects = new ArrayList<>();
     ReentrantLock lock = new ReentrantLock();
-    Tank activePlayer;
+    Tank activePlayer = new Tank();
     Field f;
     int width = 20, height = 20;
     int _tankWidth = 25, _tankHeight = 35;
@@ -181,6 +181,8 @@ public class GamePanel extends JPanel implements GameManager
         moving = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
         effects = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
         pixels = new int[(int) (d.getWidth() * d.getHeight())];
+        activePlayer = new Tank(_tankWidth * gridSize.intValue() / _gridSize,
+                _tankHeight * gridSize.intValue() / _gridSize);
         activePlayer.setFromJSON(config.getJSONObject(Const.Tank));
         Arrays.fill(pixels, 0);
     }
