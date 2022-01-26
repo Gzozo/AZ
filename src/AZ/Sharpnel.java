@@ -12,9 +12,9 @@ public class Sharpnel extends Ammo
     {
         super(x, y, 3, 2, rot, 500, f);
         setPic("sharpnel.png");
-        type = "sharpnel";
         cooldown = 80;
         c = Color.GRAY;
+        name = "Sharpnel";
     }
     
     public Sharpnel()

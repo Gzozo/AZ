@@ -27,7 +27,7 @@ public class HE extends Ammo
         this.sharpnelCount = sharpnelCount;
         cooldown = 120;
         c = Color.ORANGE;
-        type = "he";
+        name = "HE";
     }
     
     /**

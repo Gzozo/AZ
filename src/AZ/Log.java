@@ -12,4 +12,9 @@ public class Log
     {
         LOG.log(Log.class.getCanonicalName(), Level.INFO, message, null);
     }
+    
+    public static void log(int message)
+    {
+        log(message + "");
+    }
 }

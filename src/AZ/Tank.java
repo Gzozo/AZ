@@ -558,6 +558,7 @@ public class Tank implements GameEntity
         ret.put("pic", _pic);
         //Log.log(ammo.getClass().getName());
         ret.put("ammo", ammo.getClass().getName());
+        ret.put("count", ammo.shellCount);
         
         return ret;
     }
@@ -584,6 +585,7 @@ public class Tank implements GameEntity
             e.printStackTrace();
             ammo = Ammo.getDefaultAmmo();
         }
+        ammo.shellCount = set.getInt("count");
     }
     
 }

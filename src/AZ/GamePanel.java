@@ -1,12 +1,9 @@
 package AZ;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
@@ -18,11 +15,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -30,7 +23,6 @@ import java.util.logging.Logger;
 
 import javax.swing.*;
 
-import com.sun.source.tree.Tree;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -211,7 +203,12 @@ public class GamePanel extends JPanel implements GameManager
         topFrame.requestFocus();
         ammoType = (JLabel) ESwing.getComponent(topFrame, "ammoType");
         ammoCount = (JLabel) ESwing.getComponent(topFrame, "ammoCount");
-        ammoType.setText(activePlayer.ammo.type);
+        RefreshAmmoLabels();
+    }
+    
+    private void RefreshAmmoLabels()
+    {
+        ammoType.setText(activePlayer.ammo.name);
         ammoCount.setText(activePlayer.ammo.shellCount + "");
     }
     
@@ -272,21 +269,23 @@ public class GamePanel extends JPanel implements GameManager
             {
                 entities.subList(i, entities.size()).clear();
             }
+            //Log.log(entities.size());
         }
         if(receive.has(Const.players))
         {
             JSONObject entity = receive.getJSONObject(Const.players);
             players.forEach(x -> x.Erase((Graphics2D) moving.getGraphics()));
             int i = 0, j = 0;
+            Iterator<String> keys = entity.keys();
             for(; i < entity.length() && j < players.size(); i++, j++)
             {
-                players.get(i).setFromJSON(entity.getJSONObject(i + ""));
+                players.get(i).setFromJSON(entity.getJSONObject(keys.next()));
             }
             while(i < entity.length())
             {
                 Tank a = new Tank(_tankWidth * gridSize.intValue() / _gridSize,
                         _tankHeight * gridSize.intValue() / _gridSize);
-                a.setFromJSON(entity.getJSONObject(i + ""));
+                a.setFromJSON(entity.getJSONObject(keys.next()));
                 players.add(a);
                 i++;
             }
@@ -294,6 +293,8 @@ public class GamePanel extends JPanel implements GameManager
             {
                 players.subList(i, players.size()).clear();
             }
+            activePlayer.setFromJSON(entity.getJSONObject(name));
+            
         }
         if(receive.has(Const.config))
         {
@@ -528,8 +529,7 @@ public class GamePanel extends JPanel implements GameManager
             if(!dead)
                 SendKeys(e, true);
             k.processKey(e.getKeyCode());
-            ammoType.setText(activePlayer.ammo.type);
-            ammoCount.setText(activePlayer.ammo.shellCount + "");
+            RefreshAmmoLabels();
             // activePlayer.processKey(e, true);
             // activePlayer.CheckCollision();
             // repaint();

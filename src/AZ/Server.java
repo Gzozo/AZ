@@ -213,7 +213,8 @@ public class Server extends Thread implements GameManager
             Tank val = entry.getValue().t;
             if(val.dead)
                 continue;
-            entity.put(index + "", val.toJSON());
+            //entity.put(index + "", val.toJSON());
+            entity.putOnce(entry.getValue().name, val.toJSON());
             index++;
         }
         ret.put(Const.players, entity);

@@ -10,11 +10,12 @@ public class AP extends Ammo
     {
         super(x, y, 5, 2.5, rot, 600, f);
         setPic("");
+        name = "AP";
     }
     
     public AP()
     {
-        super();
+        this(0, 0, 0, null);
     }
     
     
