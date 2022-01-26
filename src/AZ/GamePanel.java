@@ -25,6 +25,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 
@@ -41,6 +43,7 @@ public class GamePanel extends JPanel implements GameManager
     
     @Serial
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(GameManager.class.getName());
     
     ArrayList<Tank> players = new ArrayList<>();
     ArrayList<GameEntity> entities = new ArrayList<>();
@@ -106,13 +109,15 @@ public class GamePanel extends JPanel implements GameManager
         dp.setData(buf);
         dp.setLength(buf.length);
         
-        System.out.println(client.getLocalPort() + " " + serverIp);
+        LOGGER.log(Level.FINE, client.getLocalPort() + " " + serverIp);
+        //Log.log(client.getLocalPort() + " " + serverIp);
         
         client.receive(dp);
         JSONObject receive = new JSONObject(new String(buf));
         // Config(receive.getJSONObject("Config"));
         processData(receive);
-        System.out.println("Config Done");
+        LOGGER.log(Level.FINE, "Config Done");
+        //Log.log("Config Done");
         
         // Panel settings
         setSize(d);

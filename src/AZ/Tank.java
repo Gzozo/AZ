@@ -265,7 +265,7 @@ public class Tank implements GameEntity
             a.parent = this;
             manager.AddEntity(a);
             manager.PlayMusic(Const.Music.shoot);
-            // System.out.println(ammo.cooldown);
+            // Log.log(ammo.cooldown);
             ammo.shellCount--;
             if(ammo.shellCount <= 0)
             {
@@ -411,7 +411,7 @@ public class Tank implements GameEntity
                 ammo.rad);
         if(left || right || top || bottom)
         {
-            // System.out.println("Dead");
+            // Log.log("Dead");
             ammo.OnContact(this);
             return true;
         }
@@ -556,7 +556,7 @@ public class Tank implements GameEntity
         ret.put("y", y);
         ret.put("rot", rot);
         ret.put("pic", _pic);
-        //System.out.println(ammo.getClass().getName());
+        //Log.log(ammo.getClass().getName());
         ret.put("ammo", ammo.getClass().getName());
         
         return ret;

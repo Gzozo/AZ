@@ -244,7 +244,7 @@ public class Server extends Thread implements GameManager
         
         scheduler.scheduleWithFixedDelay(this::ManageGame, 0, 33, TimeUnit.MILLISECONDS);
         scheduler.scheduleWithFixedDelay(this::Tick, 0, 17, TimeUnit.MILLISECONDS);
-        System.out.println("Listening " + ReceivePort);
+        Log.log("Listening " + ReceivePort);
         try
         {
             server.setSoTimeout(1000);
@@ -269,7 +269,7 @@ public class Server extends Thread implements GameManager
                 {
                     String s = new String(buf);
                     JSONObject receive = new JSONObject(s);
-                    // System.out.println(receive);
+                    // Log.log(receive);
                     if(receive.has(Const.join))
                     {
                         Join(packet, receive);
@@ -283,7 +283,7 @@ public class Server extends Thread implements GameManager
                     if(receive.has(Const.disconnect))
                     {
                         Client c = players.remove(packet.getSocketAddress());
-                        System.out.println("Disconnect " + c);
+                        Log.log("Disconnect " + c);
                     }
                     if(receive.has(Const.test))
                     {
@@ -299,7 +299,7 @@ public class Server extends Thread implements GameManager
                     lock.unlock();
                 }
                 
-                // System.out.println(receive.toString());
+                // Log.log(receive.toString());
                 
             }
             catch(SocketTimeoutException ignored)
@@ -357,7 +357,7 @@ public class Server extends Thread implements GameManager
                 c.name += "" + (sum + 1);*/
             c.picture = kep;
             players.put(packet.getSocketAddress(), c);
-            System.out.println("New Player: " + packet.getSocketAddress());
+            Log.log("New Player: " + packet.getSocketAddress());
             PlayMusic(Const.Music.playerJoined);
         }
         
@@ -402,7 +402,7 @@ public class Server extends Thread implements GameManager
             entities.clear();
             state = GameState.PLAYING;
             players.values().forEach(x -> x.t.ammo = Ammo.getDefaultAmmo());
-            System.out.println("StartGame");
+            Log.log("StartGame");
         }
         catch(Exception e)
         {

@@ -17,6 +17,9 @@ import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -64,7 +67,7 @@ public class Main implements Runnable
         int selected = 0;
         try
         {
-            //System.out.println(Const.ConfigFile);
+            //Log.log(Const.ConfigFile);
             //BufferedReader br = new BufferedReader(new InputStreamReader(Main.class.getResourceAsStream(Const
             // .ConfigFile)));
             BufferedReader br = new BufferedReader(new FileReader(Const.ConfigFile));
@@ -348,7 +351,8 @@ public class Main implements Runnable
         east.add(texts, BorderLayout.SOUTH);
         frame.add(east, BorderLayout.EAST);
         for(Component c : ESwing.getAllComponents(frame))
-            System.out.println(c.getName());
+            Log.log(c.getName());
+        //Log.log(c.getName());
         
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setVisible(true);
@@ -359,15 +363,15 @@ public class Main implements Runnable
             @Override
             public void componentResized(ComponentEvent e)
             {
-                System.out.println(frame.getSize().toString());
+                Log.log(frame.getSize().toString());
             }
         });*/
         //frame.pack();
         frame.setSize(1272, 868);
         openingFrame.setFocusableWindowState(false);
         frame.requestFocus();
-        // System.out.println(frame.getWidth() + " " + frame.getHeight());
-        // System.out.println(game.getWidth() + " " + game.getHeight());
+        // Log.log(frame.getWidth() + " " + frame.getHeight());
+        // Log.log(game.getWidth() + " " + game.getHeight());
         scheduler.schedule(() -> openingFrame.setFocusableWindowState(true), 1, TimeUnit.SECONDS);
     }
     

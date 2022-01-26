@@ -141,22 +141,22 @@ public class Mezo
         if(zart[0] && lineRect(x * grid.intValue(), y * grid.intValue(), x * grid.intValue() + grid.intValue(),
                 y * grid.intValue(), rx, ry, w, h, rot))
         {
-            // System.out.println(x + " " + y + " felso");
+            // Log.log(x + " " + y + " felso");
             return true;
         }
         if(zart[1] && lineRect(x * grid.intValue(), y * grid.intValue(), x * grid.intValue(),
                 y * grid.intValue() + grid.intValue(), rx, ry, w, h, rot))
         {
-            // System.out.println(x + " " + y + " bal");
+            // Log.log(x + " " + y + " bal");
             return true;
         }
         if(zart[2] && lineRect(x * grid.intValue(), y * grid.intValue() + grid.intValue(),
                 x * grid.intValue() + grid.intValue(), y * grid.intValue() + grid.intValue(), rx, ry, w, h, rot))
         {
-            // System.out.println(x + " " + y + " alsó");
+            // Log.log(x + " " + y + " alsó");
             return true;
         }
-        // System.out.println(x + " " + y + " jobb");
+        // Log.log(x + " " + y + " jobb");
         return zart[3] && lineRect(x * grid.intValue() + grid.intValue(), y * grid.intValue(),
                 x * grid.intValue() + grid.intValue(), y * grid.intValue() + grid.intValue(), rx, ry, w, h, rot);
         // }

@@ -44,7 +44,7 @@ public class Tank implements GameEntity
 	@Override
 	public void Draw(Graphics2D g)
 	{
-		System.out.println(prevRot + " " + rot);
+		Log.log(prevRot + " " + rot);
 		Graphics2D g0 = (Graphics2D) picture.getGraphics();
 		g0.getTransform().rotate(prevRot, rectWidth / 2, rectHeight / 2);
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));

@@ -149,7 +149,7 @@ public class Controls implements ActionListener
         @Override
         public void keyPressed(KeyEvent e)
         {
-            System.out.println("FIREEEEE");
+            Log.log("FIREEEEE");
             if(selected.equals(""))
                 return;
             commands.put(selected, e.getKeyCode());
