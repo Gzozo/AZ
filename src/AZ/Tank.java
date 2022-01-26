@@ -8,6 +8,7 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -25,24 +26,39 @@ import org.json.JSONObject;
 public class Tank implements GameEntity
 {
     
+    final double rotSpeed = 0.05, speed = 1;
+    final int fireCoolDown = 15;
+    public boolean dead;
     Image picture;
     BufferedImage original;
     String _pic;
-    
     double x, y, rectWidth, rectHeight, prevX, prevY, colX, colY, colW, colH;
     double rot, prevRot;
-    final double rotSpeed = 0.05, speed = 1;
     AtomicInteger gridSize;
     Field f;
-    public boolean dead;
-    
-    final int fireCoolDown = 15;
     int cooldown = 0;
     
     GameManager manager;
     Ammo ammo;
+    boolean collisionDebug = false;
+    double drawX = 0, drawY = 0, drawRot = 0;
+    HashMap<Integer, Boolean> keys = new HashMap<>();
+    
+    public Tank()
+    {
+        this(0, 0);
+    }
     
     //TODO: Default ctor (maybe?)
+    public Tank(int rectWidth, int rectHeight)
+    {
+        this(0, 0, rectWidth, rectHeight, "", null, new AtomicInteger(1), null);
+        /*
+         * x = prevX = y = prevY = 0; this.rectWidth = rectWidth; this.rectHeight =
+         * rectHeight; colW = this.rectWidth; colH = this.rectHeight;
+         */
+    }
+    
     public Tank(int x, int y, int rectWidth, int rectHeight, String s, Field f, AtomicInteger grid, GameManager panel)
     {
         this.x = prevX = x;
@@ -91,15 +107,6 @@ public class Tank implements GameEntity
         }
     }
     
-    public Tank(int rectWidth, int rectHeight)
-    {
-        this(0, 0, rectWidth, rectHeight, "", null, new AtomicInteger(1), null);
-        /*
-         * x = prevX = y = prevY = 0; this.rectWidth = rectWidth; this.rectHeight =
-         * rectHeight; colW = this.rectWidth; colH = this.rectHeight;
-         */
-    }
-    
     public void resize(int width, int height)
     {
         picture = original.getScaledInstance(width, height, Image.SCALE_DEFAULT);
@@ -136,30 +143,6 @@ public class Tank implements GameEntity
     {
         y = centery - (rectHeight / 2) + colY;
     }
-    
-    /**
-     * Középpont
-     *
-     * @return X
-     */
-    public double centerx()
-    {
-        return x - colX + (rectWidth / 2);
-    }
-    
-    /**
-     * Középpont
-     *
-     * @return Y
-     */
-    public double centery()
-    {
-        return y - colY + (rectHeight / 2);
-    }
-    
-    boolean collisionDebug = false;
-    
-    double drawX = 0, drawY = 0, drawRot = 0;
     
     @Override
     public synchronized void Draw(Graphics2D g)
@@ -231,8 +214,10 @@ public class Tank implements GameEntity
         return (int) (koor * (x ? Math.sin(r) : Math.cos(r)));
     }
     
-    HashMap<Integer, Boolean> keys = new HashMap<>();
-    
+    public void processKey(KeyEvent e)
+    {
+        processKey(e, true);
+    }
     
     public void processKey(KeyEvent e, boolean lenyom)
     {
@@ -251,55 +236,6 @@ public class Tank implements GameEntity
             return;
         if(Controls.commands.containsValue(code))
             keys.put(code, lenyom);
-    }
-    
-    public void processKey(KeyEvent e)
-    {
-        processKey(e, true);
-    }
-    
-    /**
-     * Ide készítse el a lövedéket
-     *
-     * @param rad lövedék sugara
-     * @return X koordináta
-     */
-    public double Spawnx(double rad)
-    {
-        // return Math.sin(-rot) * (rectHeight / 2 + rad / 2 + 1) + x + rectWidth / 2;
-        return -Math.sin(rot) * (-rectHeight / 2 - rad) + centerx();
-    }
-    
-    /**
-     * Ide készítse el a lövedéket
-     *
-     * @param rad lövedék sugara
-     * @return Y koordináta
-     */
-    public double Spawny(double rad)
-    {
-        // return Math.cos(-rot) * (rectHeight / 2 + rad / 2 + 1) + y + rectHeight / 2;
-        return Math.cos(rot) * (-rectHeight / 2 - rad) + centery();
-    }
-    
-    /**
-     * Ide készítse el a lövedéket
-     *
-     * @return X koordináta
-     */
-    public double Spawnx()
-    {
-        return Spawnx(ammo.rad + 2);
-    }
-    
-    /**
-     * Ide készítse el a lövedéket
-     *
-     * @return X koordináta
-     */
-    public double Spawny()
-    {
-        return Spawny(ammo.rad + 2);
     }
     
     @Override
@@ -345,6 +281,70 @@ public class Tank implements GameEntity
         prevX = x;
         prevY = y;
         prevRot = rot;
+    }
+    
+    /**
+     * Ide készítse el a lövedéket
+     *
+     * @return X koordináta
+     */
+    public double Spawnx()
+    {
+        return Spawnx(ammo.rad + 2);
+    }
+    
+    /**
+     * Ide készítse el a lövedéket
+     *
+     * @param rad lövedék sugara
+     * @return X koordináta
+     */
+    public double Spawnx(double rad)
+    {
+        // return Math.sin(-rot) * (rectHeight / 2 + rad / 2 + 1) + x + rectWidth / 2;
+        return -Math.sin(rot) * (-rectHeight / 2 - rad) + centerx();
+    }
+    
+    /**
+     * Középpont
+     *
+     * @return X
+     */
+    public double centerx()
+    {
+        return x - colX + (rectWidth / 2);
+    }
+    
+    /**
+     * Ide készítse el a lövedéket
+     *
+     * @return X koordináta
+     */
+    public double Spawny()
+    {
+        return Spawny(ammo.rad + 2);
+    }
+    
+    /**
+     * Ide készítse el a lövedéket
+     *
+     * @param rad lövedék sugara
+     * @return Y koordináta
+     */
+    public double Spawny(double rad)
+    {
+        // return Math.cos(-rot) * (rectHeight / 2 + rad / 2 + 1) + y + rectHeight / 2;
+        return Math.cos(rot) * (-rectHeight / 2 - rad) + centery();
+    }
+    
+    /**
+     * Középpont
+     *
+     * @return Y
+     */
+    public double centery()
+    {
+        return y - colY + (rectHeight / 2);
     }
     
     /**
@@ -417,33 +417,6 @@ public class Tank implements GameEntity
         }
         // dead = false;
         return false;
-    }
-    
-    @Override
-    public JSONObject toJSON()
-    {
-        JSONObject ret = new JSONObject();
-        
-        ret.put("x", x);
-        ret.put("y", y);
-        ret.put("rot", rot);
-        ret.put("pic", _pic);
-        
-        return ret;
-    }
-    
-    @Override
-    public void setFromJSON(JSONObject set)
-    {
-        x = set.getDouble("x");
-        y = set.getDouble("y");
-        rot = set.getDouble("rot");
-        String s = set.getString("pic");
-        if(_pic == null || !_pic.equals(s))
-        {
-            loadImage((int) rectWidth, (int) rectHeight, s);
-            _pic = s;
-        }
     }
     
     /**
@@ -529,6 +502,20 @@ public class Tank implements GameEntity
     }
     
     /**
+     * Két pont távolsága
+     *
+     * @param x1 Pont1 x
+     * @param y1 Pont2 y
+     * @param x2 Pont2 x
+     * @param y2 Pont2 y
+     * @return Távolság
+     */
+    double dist(double x1, double y1, double x2, double y2)
+    {
+        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    }
+    
+    /**
      * Vonal pont ütközés
      *
      * @param x1 Vonal x1
@@ -560,18 +547,43 @@ public class Tank implements GameEntity
         return d1 + d2 >= lineLen - buffer && d1 + d2 <= lineLen + buffer;
     }
     
-    /**
-     * Két pont távolsága
-     *
-     * @param x1 Pont1 x
-     * @param y1 Pont2 y
-     * @param x2 Pont2 x
-     * @param y2 Pont2 y
-     * @return Távolság
-     */
-    double dist(double x1, double y1, double x2, double y2)
+    @Override
+    public JSONObject toJSON()
     {
-        return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+        JSONObject ret = new JSONObject();
+        
+        ret.put("x", x);
+        ret.put("y", y);
+        ret.put("rot", rot);
+        ret.put("pic", _pic);
+        //System.out.println(ammo.getClass().getName());
+        ret.put("ammo", ammo.getClass().getName());
+        
+        return ret;
+    }
+    
+    @Override
+    public void setFromJSON(JSONObject set)
+    {
+        x = set.getDouble("x");
+        y = set.getDouble("y");
+        rot = set.getDouble("rot");
+        String s = set.getString("pic");
+        if(_pic == null || !_pic.equals(s))
+        {
+            loadImage((int) rectWidth, (int) rectHeight, s);
+            _pic = s;
+        }
+        s = set.optString("ammo", "");
+        try
+        {
+            ammo = (Ammo) Class.forName(s).getDeclaredConstructor().newInstance();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+            ammo = Ammo.getDefaultAmmo();
+        }
     }
     
 }
