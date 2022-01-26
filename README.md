@@ -1,6 +1,6 @@
 # AZ
 Hello there
 
-Obi-Wan Kenobi
+General Kenobi
 
 [Latest release](https://github.com/Gzozo/AZ/releases/latest)
