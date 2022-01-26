@@ -71,7 +71,7 @@ public class Main implements Runnable
         int selected = 0;
         try
         {
-            System.out.println(Const.ConfigFile);
+            //System.out.println(Const.ConfigFile);
             //BufferedReader br = new BufferedReader(new InputStreamReader(Main.class.getResourceAsStream(Const
             // .ConfigFile)));
             BufferedReader br = new BufferedReader(new FileReader(Const.ConfigFile));
