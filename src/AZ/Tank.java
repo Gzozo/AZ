@@ -238,25 +238,49 @@ public class Tank implements GameEntity
             keys.put(code, lenyom);
     }
     
+    private double rotateTick = 0;
+    
+    private void Rotate(double value)
+    {
+        //  0 -> 0.03
+        // 30 -> 0.05
+        rot += (value - (value * 0.5) * Math.max(0, (30 - rotateTick) / 30));
+        Log.log("Tick: " + rotateTick + " Value: " + (value - (value * 0.5) * Math.max(0, (30 - rotateTick) / 30)));
+    }
+    
     @Override
     public synchronized void Tick(GameManager manager)
     {
         if(dead)
             return;
+        boolean mozog = false;
         if(keys.get(Controls.commands.get("w")))
         {
+            mozog = true;
             x -= Math.sin(-rot) * speed;
             y -= Math.cos(-rot) * speed;
         }
         if(keys.get(Controls.commands.get("s")))
         {
+            mozog = true;
             x += Math.sin(-rot) * speed;
             y += Math.cos(-rot) * speed;
         }
         if(keys.get(Controls.commands.get("a")))
-            rot -= rotSpeed;
+        {
+            mozog = true;
+            Rotate(-rotSpeed);
+        }
         if(keys.get(Controls.commands.get("d")))
-            rot += rotSpeed;
+        {
+            mozog = true;
+            Rotate(rotSpeed);
+        }
+        if(!mozog)
+            rotateTick = 0;
+        else
+            rotateTick++;
+        
         if(keys.get(Controls.commands.get("fire")) && cooldown <= 0)
         {
             // ammo.getClass().getDeclaredConstructor(null);
