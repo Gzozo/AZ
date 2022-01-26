@@ -245,7 +245,7 @@ public class Tank implements GameEntity
         //  0 -> 0.03
         // 30 -> 0.05
         rot += (value - (value * 0.5) * Math.max(0, (30 - rotateTick) / 30));
-        Log.log("Tick: " + rotateTick + " Value: " + (value - (value * 0.5) * Math.max(0, (30 - rotateTick) / 30)));
+        //Log.log("Tick: " + rotateTick + " Value: " + (value - (value * 0.5) * Math.max(0, (30 - rotateTick) / 30)));
     }
     
     @Override

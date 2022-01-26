@@ -36,7 +36,7 @@ public class SoundManager
 		catch (UnsupportedAudioFileException | IOException | LineUnavailableException e)
 		{
 			new Thread(() -> play(file)).start();
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 	
