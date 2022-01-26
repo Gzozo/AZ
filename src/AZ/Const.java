@@ -27,7 +27,7 @@ public class Const
     // Config
     static String config = "Config";
     static String labirintusSeed = "Labirintus", gridSize = "GridSize", width = "Width", height = "Height",
-            tankWidth = "TWidth", tankHeight = "THeight", panelWidth = "Dimw", panelHeight = "Dimh";
+            tankWidth = "TWidth", tankHeight = "THeight", panelWidth = "Dimw", panelHeight = "Dimh", Tank = "Tank";
     // Kliens JSON
     static String join = "Join", disconnect = "Disconnect";
     static String keyboard = "Keys", key = "Key", pressed = "Press";

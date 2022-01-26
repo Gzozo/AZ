@@ -8,6 +8,7 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -43,6 +44,12 @@ public class Tank implements GameEntity
     double drawX = 0, drawY = 0, drawRot = 0;
     HashMap<Integer, Boolean> keys = new HashMap<>();
     
+    public Tank()
+    {
+        this(0, 0);
+    }
+    
+    //TODO: Default ctor (maybe?)
     public Tank(int rectWidth, int rectHeight)
     {
         this(0, 0, rectWidth, rectHeight, "", null, new AtomicInteger(1), null);
@@ -52,7 +59,6 @@ public class Tank implements GameEntity
          */
     }
     
-    //TODO: Default ctor (maybe?)
     public Tank(int x, int y, int rectWidth, int rectHeight, String s, Field f, AtomicInteger grid, GameManager panel)
     {
         this.x = prevX = x;
@@ -259,7 +265,7 @@ public class Tank implements GameEntity
             a.parent = this;
             manager.AddEntity(a);
             manager.PlayMusic(Const.Music.shoot);
-            // System.out.println(ammo.cooldown);
+            // Log.log(ammo.cooldown);
             ammo.shellCount--;
             if(ammo.shellCount <= 0)
             {
@@ -405,7 +411,7 @@ public class Tank implements GameEntity
                 ammo.rad);
         if(left || right || top || bottom)
         {
-            // System.out.println("Dead");
+            // Log.log("Dead");
             ammo.OnContact(this);
             return true;
         }
@@ -550,6 +556,9 @@ public class Tank implements GameEntity
         ret.put("y", y);
         ret.put("rot", rot);
         ret.put("pic", _pic);
+        //Log.log(ammo.getClass().getName());
+        ret.put("ammo", ammo.getClass().getName());
+        ret.put("count", ammo.shellCount);
         
         return ret;
     }
@@ -566,6 +575,17 @@ public class Tank implements GameEntity
             loadImage((int) rectWidth, (int) rectHeight, s);
             _pic = s;
         }
+        s = set.optString("ammo", "");
+        try
+        {
+            ammo = (Ammo) Class.forName(s).getDeclaredConstructor().newInstance();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+            ammo = Ammo.getDefaultAmmo();
+        }
+        ammo.shellCount = set.getInt("count");
     }
     
 }

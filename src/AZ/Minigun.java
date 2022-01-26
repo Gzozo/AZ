@@ -18,6 +18,7 @@ public class Minigun extends Ammo
         cooldown = 1;
         c = Color.GRAY;
         shellCount = 50;
+        name = "Minigun";
     }
     
     public Minigun()

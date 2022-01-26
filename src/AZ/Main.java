@@ -1,13 +1,6 @@
 package AZ;
 
-import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Font;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.Panel;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -24,6 +17,9 @@ import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -71,7 +67,7 @@ public class Main implements Runnable
         int selected = 0;
         try
         {
-            System.out.println(Const.ConfigFile);
+            //Log.log(Const.ConfigFile);
             //BufferedReader br = new BufferedReader(new InputStreamReader(Main.class.getResourceAsStream(Const
             // .ConfigFile)));
             BufferedReader br = new BufferedReader(new FileReader(Const.ConfigFile));
@@ -327,27 +323,38 @@ public class Main implements Runnable
         }
         JLabel gameState = new JLabel("", SwingConstants.CENTER);
         JTable table = new JTable();
+        JLabel ammoType = new JLabel(), ammoCount = new JLabel("10"), ammoTextType = new JLabel("Ammo type: "),
+                ammoTextCount = new JLabel("Ammo count: ");
+        ammoType.setName("ammoType");
+        ammoCount.setName("ammoCount");
         gameState.setFont(new Font("Serif", Font.PLAIN, 20));
-        // JPanel panel = new JPanel();
-        // panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        ammoType.setFont(new Font("Serif", Font.PLAIN, 20));
+        ammoCount.setFont(new Font("Serif", Font.PLAIN, 20));
+        ammoTextType.setFont(new Font("Serif", Font.PLAIN, 20));
+        ammoTextCount.setFont(new Font("Serif", Font.PLAIN, 20));
+        JPanel east = new JPanel(), texts = new JPanel();
+        east.setLayout(new BorderLayout());
+        
         game.state = gameState;
-        // panel.add(gameState);
-        // frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(),
-        // BoxLayout.Y_AXIS));
         frame.add(gameState, BorderLayout.SOUTH);
         frame.add(game, BorderLayout.CENTER);
-        game.InitAfterFrame();
         game.table = table;
         table.setModel(new StatTableModel(game));
         table.setFillsViewportHeight(true);
         JScrollPane pane = new JScrollPane(table);
-        frame.add(pane, BorderLayout.EAST);
+        east.add(pane, BorderLayout.CENTER);
+        texts.add(ammoTextType);
+        texts.add(ammoType);
+        texts.add(ammoTextCount);
+        texts.add(ammoCount);
+        east.add(texts, BorderLayout.SOUTH);
+        frame.add(east, BorderLayout.EAST);
+        /*for(Component c : ESwing.getAllComponents(frame))
+            Log.log(c.getName());*/
+        //Log.log(c.getName());
         
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        // frame.setSize(game.getWidth(), game.getHeight() + gameState.getHeight() +
-        // frame.getHeight() + 10);
         frame.setVisible(true);
-        // frame.setResizable(false);
         frame.addKeyListener(game.new KeyboardListener());
         table.addKeyListener(game.new KeyboardListener());
         /*frame.addComponentListener(new ComponentAdapter()
@@ -355,15 +362,16 @@ public class Main implements Runnable
             @Override
             public void componentResized(ComponentEvent e)
             {
-                System.out.println(frame.getSize().toString());
+                Log.log(frame.getSize().toString());
             }
         });*/
         //frame.pack();
+        game.InitAfterFrame(frame);
         frame.setSize(1272, 868);
         openingFrame.setFocusableWindowState(false);
         frame.requestFocus();
-        // System.out.println(frame.getWidth() + " " + frame.getHeight());
-        // System.out.println(game.getWidth() + " " + game.getHeight());
+        // Log.log(frame.getWidth() + " " + frame.getHeight());
+        // Log.log(game.getWidth() + " " + game.getHeight());
         scheduler.schedule(() -> openingFrame.setFocusableWindowState(true), 1, TimeUnit.SECONDS);
     }
     

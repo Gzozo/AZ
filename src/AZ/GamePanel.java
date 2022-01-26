@@ -1,12 +1,9 @@
 package AZ;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
@@ -18,17 +15,14 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.*;
 
-import com.sun.source.tree.Tree;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -41,12 +35,13 @@ public class GamePanel extends JPanel implements GameManager
     
     @Serial
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(GameManager.class.getName());
     
     ArrayList<Tank> players = new ArrayList<>();
     ArrayList<GameEntity> entities = new ArrayList<>();
     ArrayList<GameEntity> localEffects = new ArrayList<>();
     ReentrantLock lock = new ReentrantLock();
-    Tank activePlayer;
+    Tank activePlayer = new Tank();
     Field f;
     int width = 20, height = 20;
     int _tankWidth = 25, _tankHeight = 35;
@@ -67,6 +62,7 @@ public class GamePanel extends JPanel implements GameManager
     Konami k = new Konami();
     
     public JLabel state = null;
+    JLabel ammoType, ammoCount;
     public JTable table = new JTable();
     //public TreeMap<String, Client> stats = new TreeMap<String, Client>(new Sort());
     public TreeSet<Client> stats = new TreeSet<>(new Sort());
@@ -106,13 +102,15 @@ public class GamePanel extends JPanel implements GameManager
         dp.setData(buf);
         dp.setLength(buf.length);
         
-        System.out.println(client.getLocalPort() + " " + serverIp);
+        LOGGER.log(Level.FINE, client.getLocalPort() + " " + serverIp);
+        //Log.log(client.getLocalPort() + " " + serverIp);
         
         client.receive(dp);
         JSONObject receive = new JSONObject(new String(buf));
         // Config(receive.getJSONObject("Config"));
         processData(receive);
-        System.out.println("Config Done");
+        LOGGER.log(Level.FINE, "Config Done");
+        //Log.log("Config Done");
         
         // Panel settings
         setSize(d);
@@ -181,16 +179,17 @@ public class GamePanel extends JPanel implements GameManager
         moving = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
         effects = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
         pixels = new int[(int) (d.getWidth() * d.getHeight())];
-        
+        activePlayer = new Tank(_tankWidth * gridSize.intValue() / _gridSize,
+                _tankHeight * gridSize.intValue() / _gridSize);
+        activePlayer.setFromJSON(config.getJSONObject(Const.Tank));
         Arrays.fill(pixels, 0);
     }
     
     /**
      * Az ablak bezárásakkor lefutó esemény beállítása
      */
-    public void InitAfterFrame()
+    public void InitAfterFrame(JFrame topFrame)
     {
-        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         topFrame.addWindowListener(new WindowAdapter()
         {
             @Override
@@ -202,6 +201,15 @@ public class GamePanel extends JPanel implements GameManager
         });
         topFrame.setTitle(topFrame.getTitle() + " " + name);
         topFrame.requestFocus();
+        ammoType = (JLabel) ESwing.getComponent(topFrame, "ammoType");
+        ammoCount = (JLabel) ESwing.getComponent(topFrame, "ammoCount");
+        RefreshAmmoLabels();
+    }
+    
+    private void RefreshAmmoLabels()
+    {
+        ammoType.setText(activePlayer.ammo.name);
+        ammoCount.setText(activePlayer.ammo.shellCount + "");
     }
     
     /**
@@ -261,21 +269,23 @@ public class GamePanel extends JPanel implements GameManager
             {
                 entities.subList(i, entities.size()).clear();
             }
+            //Log.log(entities.size());
         }
         if(receive.has(Const.players))
         {
             JSONObject entity = receive.getJSONObject(Const.players);
             players.forEach(x -> x.Erase((Graphics2D) moving.getGraphics()));
             int i = 0, j = 0;
+            Iterator<String> keys = entity.keys();
             for(; i < entity.length() && j < players.size(); i++, j++)
             {
-                players.get(i).setFromJSON(entity.getJSONObject(i + ""));
+                players.get(i).setFromJSON(entity.getJSONObject(keys.next()));
             }
             while(i < entity.length())
             {
                 Tank a = new Tank(_tankWidth * gridSize.intValue() / _gridSize,
                         _tankHeight * gridSize.intValue() / _gridSize);
-                a.setFromJSON(entity.getJSONObject(i + ""));
+                a.setFromJSON(entity.getJSONObject(keys.next()));
                 players.add(a);
                 i++;
             }
@@ -283,6 +293,8 @@ public class GamePanel extends JPanel implements GameManager
             {
                 players.subList(i, players.size()).clear();
             }
+            activePlayer.setFromJSON(entity.getJSONObject(name));
+            
         }
         if(receive.has(Const.config))
         {
@@ -517,6 +529,7 @@ public class GamePanel extends JPanel implements GameManager
             if(!dead)
                 SendKeys(e, true);
             k.processKey(e.getKeyCode());
+            RefreshAmmoLabels();
             // activePlayer.processKey(e, true);
             // activePlayer.CheckCollision();
             // repaint();

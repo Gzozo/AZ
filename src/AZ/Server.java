@@ -30,19 +30,45 @@ import org.json.JSONObject;
  */
 public class Server extends Thread implements GameManager
 {
-    final static String[] pics = new String[]{"p1.png", "p2.png", "p3.png", "p4.png", "p5.png"};
+    /**
+     * A játék állapota
+     * Mutatja a felhasználónak az állapotot, és tárolja hogy meghalhat e a tank
+     */
+    public enum GameState
+    {
+        JOINING(false, "Joining"), STARTING(false, "Starting"), PLAYINGBEGIN(true, "Playing"), PLAYING(true, "Playing"
+    ), ENDING(true, "Ending"), IDLE(false, "Idle");
+        
+        public boolean death;
+        public String state;
+        
+        GameState(Boolean b)
+        {
+            death = b;
+            state = "";
+        }
+        
+        GameState(Boolean b, String s)
+        {
+            death = b;
+            state = s;
+        }
+        
+    }
+    
+    GameState state;
+    
     final int packetSize = 1024 * 1024;
+    int ReceivePort;
+    DatagramSocket server = null;
+    // DatagramSocket sender = null;
+    Field f;
     final int width = 20, height = 20;
     final int _tankWidth = 20, _tankHeight = 28;
     final int _gridSize = 50;
     final int minPlayer = 2;
     final Dimension refer = new Dimension(800, 800);
-    public boolean dying = false;
-    GameState state;
-    int ReceivePort;
-    DatagramSocket server = null;
-    // DatagramSocket sender = null;
-    Field f;
+    final static String[] pics = new String[]{"p1.png", "p2.png", "p3.png", "p4.png", "p5.png"};
     AtomicInteger gridSize = new AtomicInteger(25);
     ReentrantLock lock = new ReentrantLock();
     boolean statsChanged = false;
@@ -57,8 +83,8 @@ public class Server extends Thread implements GameManager
      **/
     Ammo[] ammoTypes = new Ammo[]{new AP(), new HE(), new Sharpnel(), new Minigun()};
     double chancePU = 1.0 / 10 / 30;
-    ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
-    Random chance = new Random();
+    
+    public boolean dying = false;
     
     public Server(int rp)
     {
@@ -88,152 +114,38 @@ public class Server extends Thread implements GameManager
     }
     
     /**
-     * Figyeli a hálózatot, feldolgozza a kéréseket, és válaszol is ha kell
+     * Új pálya generálása, a kliensek megkérése, hogy csatlakozzanak újra
      */
-    public void run()
+    public void newGame()
     {
-        
-        scheduler.scheduleWithFixedDelay(() -> ManageGame(), 0, 33, TimeUnit.MILLISECONDS);
-        scheduler.scheduleWithFixedDelay(() -> Tick(), 0, 17, TimeUnit.MILLISECONDS);
-        System.out.println("Listening " + ReceivePort);
+        lock.lock();
         try
         {
-            server.setSoTimeout(1000);
+            f.GenerateField();
+            players.values().removeIf(x -> !x.joined);
+            entities.removeIf(x -> x instanceof PowerUp);
+            JSONObject rejoin = new JSONObject();
+            rejoin.put(Const.rejoin, true);
+            DatagramPacket dp = new DatagramPacket(rejoin.toString().getBytes(), rejoin.toString().getBytes().length);
+            for(Entry<SocketAddress, Client> entry : players.entrySet())
+            {
+                entry.getValue().joined = false;
+                entry.getValue().t.dead = true;
+                dp.setSocketAddress(entry.getKey());
+                server.send(dp);
+            }
+            state = GameState.PLAYINGBEGIN;
+            scheduler.schedule(() -> state = state == GameState.PLAYINGBEGIN ? GameState.PLAYING : state, 2,
+                    TimeUnit.SECONDS);
         }
-        catch(SocketException e1)
+        catch(IOException e)
         {
-            e1.printStackTrace();
+            e.printStackTrace();
         }
-        while(!dying)
+        finally
         {
-            try
-            {
-                byte[] buf = new byte[packetSize];
-                
-                // receive request
-                DatagramPacket packet = new DatagramPacket(buf, packetSize);
-                server.receive(packet);
-                if(dying)
-                    break;
-                lock.lock();
-                try
-                {
-                    String s = new String(buf);
-                    JSONObject receive = new JSONObject(s);
-                    // System.out.println(receive);
-                    JSONObject ret = new JSONObject();
-                    if(receive.has(Const.join))
-                    {
-                        Random r = new Random();
-                        int x = r.nextInt(width);
-                        int y = r.nextInt(height);
-                        
-                        String pic = receive.getString(Const.join);
-                        String kep = pic;
-                        
-                        if(!Arrays.stream(pics).anyMatch(d -> d.equals(pic)))
-                        {
-                            // pic = pics[r.nextInt(pics.length)];
-                            kep = pics[r.nextInt(pics.length)];
-                        }
-                        Tank t = new Tank(0, 0, _tankWidth * gridSize.intValue() / _gridSize,
-                                _tankHeight * gridSize.intValue() / _gridSize, kep, f, gridSize, this);
-                        
-                        t.setCenterx(f.mezok[x][y].centerx());
-                        t.setCentery(f.mezok[x][y].centery());
-                        
-                        if(players.contains(packet.getSocketAddress()))
-                        {
-                            players.get(packet.getSocketAddress()).t = t;
-                            players.get(packet.getSocketAddress()).joined = true;
-                        }
-                        else
-                        {
-                            Client c = new Client(t);
-                            String name = receive.optString(Const.name, "Player" + (players.size() + 1));
-                            String nameCheck = name;
-                            int num = 1;
-                            while(players.hasName(nameCheck))
-                            {
-                                num++;
-                                nameCheck = name + num;
-                            }
-                            c.name = nameCheck;
-                            /*int sum = players.values().stream().mapToInt(client -> client.name == c.name ? 1 : 0)
-                            .sum();
-                            if(sum > 0)
-                                c.name += "" + (sum + 1);*/
-                            c.picture = kep;
-                            players.put(packet.getSocketAddress(), c);
-                            System.out.println("New Player: " + packet.getSocketAddress());
-                            PlayMusic(Const.Music.playerJoined);
-                        }
-                        
-                        if(state == GameState.JOINING && players.values().stream().mapToInt(c -> c.joined ? 1 : 0).sum() >= minPlayer)
-                        {
-                            scheduler.schedule(() -> StartGame(), 5, TimeUnit.SECONDS);
-                            state = GameState.STARTING;
-                        }
-                        
-                        JSONObject config = new JSONObject();
-                        
-                        config.put(Const.labirintusSeed, f.seed);
-                        config.put(Const.gridSize, gridSize.intValue());
-                        config.put(Const.width, width);
-                        config.put(Const.height, height);
-                        config.put(Const.tankWidth, _tankWidth);
-                        config.put(Const.tankHeight, _tankHeight);
-                        config.put(Const.panelWidth, refer.width);
-                        config.put(Const.panelHeight, refer.height);
-                        config.put(Const.name, players.get(packet.getSocketAddress()).name);
-                        ret.put(Const.config, config);
-                        Signal signal = new Signal(f.mezok[x][y].centerx(), f.mezok[x][y].centery(), 200,
-                                Math.max(t.rectWidth, t.rectHeight), 0, Color.red);
-                        ret.put(Const.highlight, signal.toJSON());
-                        
-                        DatagramPacket respond = new DatagramPacket(ret.toString().getBytes(),
-                                ret.toString().length(), packet.getAddress(), packet.getPort());
-                        server.send(respond);
-                        statsChanged = true;
-                    }
-                    if(receive.has(Const.keyboard))
-                    {
-                        JSONObject keys = receive.getJSONObject(Const.keyboard);
-                        Tank t = players.get(packet.getSocketAddress()).t;
-                        t.processKey(keys.getInt(Const.key), keys.getBoolean(Const.pressed));
-                    }
-                    if(receive.has(Const.disconnect))
-                    {
-                        Client c = players.remove(packet.getSocketAddress());
-                        System.out.println("Disconnect " + c);
-                    }
-                    if(receive.has(Const.test))
-                    {
-                        server.send(packet);
-                    }
-                }
-                catch(Exception e)
-                {
-                    e.printStackTrace();
-                }
-                finally
-                {
-                    lock.unlock();
-                }
-                
-                // System.out.println(receive.toString());
-                
-            }
-            catch(SocketTimeoutException ignored)
-            {
-            }
-            catch(IOException e)
-            {
-                e.printStackTrace();
-            }
+            lock.unlock();
         }
-        scheduler.shutdown();
-        server.close();
     }
     
     /**
@@ -278,44 +190,6 @@ public class Server extends Thread implements GameManager
     }
     
     /**
-     * Új pálya generálása, a kliensek megkérése, hogy csatlakozzanak újra
-     */
-    public void newGame()
-    {
-        lock.lock();
-        try
-        {
-            f.GenerateField();
-            players.values().removeIf(x -> !x.joined);
-            entities.removeIf(x ->
-            {
-                return x instanceof PowerUp;
-            });
-            JSONObject rejoin = new JSONObject();
-            rejoin.put(Const.rejoin, true);
-            DatagramPacket dp = new DatagramPacket(rejoin.toString().getBytes(), rejoin.toString().getBytes().length);
-            for(Entry<SocketAddress, Client> entry : players.entrySet())
-            {
-                entry.getValue().joined = false;
-                entry.getValue().t.dead = true;
-                dp.setSocketAddress(entry.getKey());
-                server.send(dp);
-            }
-            state = GameState.PLAYINGBEGIN;
-            scheduler.schedule(() -> state = state == GameState.PLAYINGBEGIN ? GameState.PLAYING : state, 2,
-                    TimeUnit.SECONDS);
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            lock.unlock();
-        }
-    }
-    
-    /**
      * Az összes adat JSON formátumú Stringben
      *
      * @return adat
@@ -339,7 +213,8 @@ public class Server extends Thread implements GameManager
             Tank val = entry.getValue().t;
             if(val.dead)
                 continue;
-            entity.put(index + "", val.toJSON());
+            //entity.put(index + "", val.toJSON());
+            entity.putOnce(entry.getValue().name, val.toJSON());
             index++;
         }
         ret.put(Const.players, entity);
@@ -360,6 +235,163 @@ public class Server extends Thread implements GameManager
         return ret.toString();
     }
     
+    ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    
+    /**
+     * Figyeli a hálózatot, feldolgozza a kéréseket, és válaszol is ha kell
+     */
+    public void run()
+    {
+        
+        scheduler.scheduleWithFixedDelay(this::ManageGame, 0, 33, TimeUnit.MILLISECONDS);
+        scheduler.scheduleWithFixedDelay(this::Tick, 0, 17, TimeUnit.MILLISECONDS);
+        Log.log("Listening " + ReceivePort);
+        try
+        {
+            server.setSoTimeout(1000);
+        }
+        catch(SocketException e1)
+        {
+            e1.printStackTrace();
+        }
+        while(!dying)
+        {
+            try
+            {
+                byte[] buf = new byte[packetSize];
+                
+                // receive request
+                DatagramPacket packet = new DatagramPacket(buf, packetSize);
+                server.receive(packet);
+                if(dying)
+                    break;
+                lock.lock();
+                try
+                {
+                    String s = new String(buf);
+                    JSONObject receive = new JSONObject(s);
+                    // Log.log(receive);
+                    if(receive.has(Const.join))
+                    {
+                        Join(packet, receive);
+                    }
+                    if(receive.has(Const.keyboard))
+                    {
+                        JSONObject keys = receive.getJSONObject(Const.keyboard);
+                        Tank t = players.get(packet.getSocketAddress()).t;
+                        t.processKey(keys.getInt(Const.key), keys.getBoolean(Const.pressed));
+                    }
+                    if(receive.has(Const.disconnect))
+                    {
+                        Client c = players.remove(packet.getSocketAddress());
+                        Log.log("Disconnect " + c);
+                    }
+                    if(receive.has(Const.test))
+                    {
+                        server.send(packet);
+                    }
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
+                finally
+                {
+                    lock.unlock();
+                }
+                
+                // Log.log(receive.toString());
+                
+            }
+            catch(SocketTimeoutException ignored)
+            {
+            }
+            catch(IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        scheduler.shutdown();
+        server.close();
+    }
+    
+    private void Join(DatagramPacket packet, JSONObject receive) throws IOException
+    {
+        Random r = new Random();
+        int x = r.nextInt(width);
+        int y = r.nextInt(height);
+        
+        String pic = receive.getString(Const.join);
+        String kep = pic;
+        
+        if(Arrays.stream(pics).noneMatch(d -> d.equals(pic)))
+        {
+            // pic = pics[r.nextInt(pics.length)];
+            kep = pics[r.nextInt(pics.length)];
+        }
+        Tank t = new Tank(0, 0, _tankWidth * gridSize.intValue() / _gridSize,
+                _tankHeight * gridSize.intValue() / _gridSize, kep, f, gridSize, this);
+        
+        t.setCenterx(f.mezok[x][y].centerx());
+        t.setCentery(f.mezok[x][y].centery());
+        
+        if(players.contains(packet.getSocketAddress()))
+        {
+            players.get(packet.getSocketAddress()).t = t;
+            players.get(packet.getSocketAddress()).joined = true;
+        }
+        else
+        {
+            Client c = new Client(t);
+            String name = receive.optString(Const.name, "Player" + (players.size() + 1));
+            String nameCheck = name;
+            int num = 1;
+            while(players.hasName(nameCheck))
+            {
+                num++;
+                nameCheck = name + num;
+            }
+            c.name = nameCheck;
+            /*int sum = players.values().stream().mapToInt(client -> client.name == c.name ? 1 : 0)
+            .sum();
+            if(sum > 0)
+                c.name += "" + (sum + 1);*/
+            c.picture = kep;
+            players.put(packet.getSocketAddress(), c);
+            Log.log("New Player: " + packet.getSocketAddress());
+            PlayMusic(Const.Music.playerJoined);
+        }
+        
+        if(state == GameState.JOINING && players.values().stream().mapToInt(c -> c.joined ? 1 : 0).sum() >= minPlayer)
+        {
+            scheduler.schedule(this::StartGame, 5, TimeUnit.SECONDS);
+            state = GameState.STARTING;
+        }
+        
+        JSONObject ret = new JSONObject();
+        JSONObject config = new JSONObject();
+        
+        config.put(Const.labirintusSeed, f.seed);
+        config.put(Const.gridSize, gridSize.intValue());
+        config.put(Const.width, width);
+        config.put(Const.height, height);
+        config.put(Const.tankWidth, _tankWidth);
+        config.put(Const.tankHeight, _tankHeight);
+        config.put(Const.panelWidth, refer.width);
+        config.put(Const.panelHeight, refer.height);
+        config.put(Const.name, players.get(packet.getSocketAddress()).name);
+        config.put(Const.Tank, t.toJSON());
+        ret.put(Const.config, config);
+        Signal signal = new Signal(f.mezok[x][y].centerx(), f.mezok[x][y].centery(), 200, Math.max(t.rectWidth,
+                t.rectHeight), 0, Color.red);
+        ret.put(Const.highlight, signal.toJSON());
+        
+        DatagramPacket respond = new DatagramPacket(ret.toString().getBytes(), ret.toString().length(),
+                packet.getAddress(), packet.getPort());
+        server.send(respond);
+        statsChanged = true;
+    }
+    
     /**
      * A játék valódi indítása (előtte általában várnak játékosok csatlakozására)
      */
@@ -371,7 +403,7 @@ public class Server extends Thread implements GameManager
             entities.clear();
             state = GameState.PLAYING;
             players.values().forEach(x -> x.t.ammo = Ammo.getDefaultAmmo());
-            System.out.println("StartGame");
+            Log.log("StartGame");
         }
         catch(Exception e)
         {
@@ -383,30 +415,19 @@ public class Server extends Thread implements GameManager
         }
     }
     
-    /**
-     * Időzítés megvalósítása, léptet
-     */
-    @SuppressWarnings("unchecked")
-    void Tick()
+    public void AddEntity(GameEntity e)
     {
-        lock.lock();
-        try
+        synchronized(entities)
         {
-            players.forEach((x, y) -> y.t.Tick(this));
-            ((ArrayList<GameEntity>) entities.clone()).forEach(x -> x.Tick(this));
-            double dice = chance.nextDouble();
-            if(dice <= chancePU)
-                AddPowerUp();
-            
+            entities.add(e);
         }
-        catch(Exception e)
+    }
+    
+    public void RemoveEntity(GameEntity e)
+    {
+        synchronized(entities)
         {
-            e.printStackTrace();
-        }
-        finally
-        {
-            lock.unlock();
-            
+            entities.remove(e);
         }
     }
     
@@ -418,28 +439,6 @@ public class Server extends Thread implements GameManager
         PowerUp pu = new PowerUp(f.mezok[x][y].centerx(), f.mezok[x][y].centery(), gridSize.intValue() / 4, f,
                 ammoTypes[r.nextInt(ammoTypes.length - 1) + 1]);// First ammo is default
         AddEntity(pu);
-    }
-    
-    public void AddEntity(GameEntity e)
-    {
-        synchronized(entities)
-        {
-            entities.add(e);
-        }
-    }
-    
-    @Override
-    public void PlayMusic(String f)
-    {
-        music.add(f);
-    }
-    
-    public void RemoveEntity(GameEntity e)
-    {
-        synchronized(entities)
-        {
-            entities.remove(e);
-        }
     }
     
     public boolean CheckTank(Ammo ammo)
@@ -476,6 +475,35 @@ public class Server extends Thread implements GameManager
         return hit;
     }
     
+    Random chance = new Random();
+    
+    /**
+     * Időzítés megvalósítása, léptet
+     */
+    @SuppressWarnings("unchecked")
+    void Tick()
+    {
+        lock.lock();
+        try
+        {
+            players.forEach((x, y) -> y.t.Tick(this));
+            ((ArrayList<GameEntity>) entities.clone()).forEach(x -> x.Tick(this));
+            double dice = chance.nextDouble();
+            if(dice <= chancePU)
+                AddPowerUp();
+            
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            lock.unlock();
+            
+        }
+    }
+    
     @Override
     public void deadTank(Tank t)
     {
@@ -496,29 +524,9 @@ public class Server extends Thread implements GameManager
         
     }
     
-    /**
-     * A játék állapota
-     * Mutatja a felhasználónak az állapotot, és tárolja hogy meghalhat e a tank
-     */
-    public enum GameState
+    @Override
+    public void PlayMusic(String f)
     {
-        JOINING(false, "Joining"), STARTING(false, "Starting"), PLAYINGBEGIN(true, "Playing"), PLAYING(true, "Playing"
-    ), ENDING(true, "Ending"), IDLE(false, "Idle");
-        
-        public boolean death;
-        public String state;
-        
-        GameState(Boolean b)
-        {
-            death = b;
-            state = "";
-        }
-        
-        GameState(Boolean b, String s)
-        {
-            death = b;
-            state = s;
-        }
-        
+        music.add(f);
     }
 }

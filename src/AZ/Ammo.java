@@ -26,7 +26,14 @@ public abstract class Ammo implements GameEntity
     Field f;
     int cooldown = 60;
     Color c = Color.BLACK;
+    /**
+     * Draw type, default or power
+     */
     String type = "default";
+    /**
+     * Actual name of the ammo type
+     */
+    String name = "placeholder";
     int shellCount = 10;
     public String pic = "";
     public BufferedImage picture = null;
