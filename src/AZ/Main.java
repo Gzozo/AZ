@@ -338,7 +338,6 @@ public class Main implements Runnable
         game.state = gameState;
         frame.add(gameState, BorderLayout.SOUTH);
         frame.add(game, BorderLayout.CENTER);
-        game.InitAfterFrame();
         game.table = table;
         table.setModel(new StatTableModel(game));
         table.setFillsViewportHeight(true);
@@ -350,8 +349,8 @@ public class Main implements Runnable
         texts.add(ammoCount);
         east.add(texts, BorderLayout.SOUTH);
         frame.add(east, BorderLayout.EAST);
-        for(Component c : ESwing.getAllComponents(frame))
-            Log.log(c.getName());
+        /*for(Component c : ESwing.getAllComponents(frame))
+            Log.log(c.getName());*/
         //Log.log(c.getName());
         
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -367,6 +366,7 @@ public class Main implements Runnable
             }
         });*/
         //frame.pack();
+        game.InitAfterFrame(frame);
         frame.setSize(1272, 868);
         openingFrame.setFocusableWindowState(false);
         frame.requestFocus();

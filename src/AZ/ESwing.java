@@ -23,10 +23,15 @@ public class ESwing
         Component[] comps = c.getComponents();
         for(Component comp : comps)
         {
-            if(comp.getName().equals(name))
+            //Log.log(comp.getName());
+            if(comp.getName() != null && comp.getName().equals(name))
                 return comp;
             if(comp instanceof Container)
-                return getComponent((Container) comp, name);
+            {
+                Component com = getComponent((Container) comp, name);
+                if(com != null && com.getName() != null)
+                    return com;
+            }
         }
         return null;
     }

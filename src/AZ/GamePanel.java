@@ -70,6 +70,7 @@ public class GamePanel extends JPanel implements GameManager
     Konami k = new Konami();
     
     public JLabel state = null;
+    JLabel ammoType, ammoCount;
     public JTable table = new JTable();
     //public TreeMap<String, Client> stats = new TreeMap<String, Client>(new Sort());
     public TreeSet<Client> stats = new TreeSet<>(new Sort());
@@ -195,9 +196,8 @@ public class GamePanel extends JPanel implements GameManager
     /**
      * Az ablak bezárásakkor lefutó esemény beállítása
      */
-    public void InitAfterFrame()
+    public void InitAfterFrame(JFrame topFrame)
     {
-        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
         topFrame.addWindowListener(new WindowAdapter()
         {
             @Override
@@ -209,6 +209,10 @@ public class GamePanel extends JPanel implements GameManager
         });
         topFrame.setTitle(topFrame.getTitle() + " " + name);
         topFrame.requestFocus();
+        ammoType = (JLabel) ESwing.getComponent(topFrame, "ammoType");
+        ammoCount = (JLabel) ESwing.getComponent(topFrame, "ammoCount");
+        ammoType.setText(activePlayer.ammo.type);
+        ammoCount.setText(activePlayer.ammo.shellCount + "");
     }
     
     /**
@@ -524,6 +528,8 @@ public class GamePanel extends JPanel implements GameManager
             if(!dead)
                 SendKeys(e, true);
             k.processKey(e.getKeyCode());
+            ammoType.setText(activePlayer.ammo.type);
+            ammoCount.setText(activePlayer.ammo.shellCount + "");
             // activePlayer.processKey(e, true);
             // activePlayer.CheckCollision();
             // repaint();
