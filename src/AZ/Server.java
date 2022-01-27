@@ -281,6 +281,20 @@ public class Server extends Thread implements GameManager
                         Tank t = players.get(packet.getSocketAddress()).t;
                         t.processKey(keys.getInt(Const.key), keys.getBoolean(Const.pressed));
                     }
+                    //Receive x,y,rot
+                    if(receive.has(Const.playerTank))
+                    {
+                        Tank t = players.get(packet.getSocketAddress()).t;
+                        if(t != null)
+                            t.ReceiveServer(receive.getJSONObject(Const.playerTank));
+                    }
+                    //Fire key pressed or released
+                    if(receive.has(Const.Fire))
+                    {
+                        Tank t = players.get(packet.getSocketAddress()).t;
+                        if(t != null)
+                            t.processKey(Controls.commands.get("fire"), receive.getBoolean(Const.Fire));
+                    }
                     if(receive.has(Const.disconnect))
                     {
                         Client c = players.remove(packet.getSocketAddress());
@@ -352,10 +366,6 @@ public class Server extends Thread implements GameManager
                 nameCheck = name + num;
             }
             c.name = nameCheck;
-            /*int sum = players.values().stream().mapToInt(client -> client.name == c.name ? 1 : 0)
-            .sum();
-            if(sum > 0)
-                c.name += "" + (sum + 1);*/
             c.picture = kep;
             players.put(packet.getSocketAddress(), c);
             Log.log("New Player: " + packet.getSocketAddress());

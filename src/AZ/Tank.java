@@ -28,7 +28,7 @@ public class Tank implements GameEntity
     
     final double rotSpeed = 0.05, speed = 1;
     final int fireCoolDown = 15;
-    public boolean dead;
+    public boolean dead, remove = false;
     Image picture;
     BufferedImage original;
     String _pic;
@@ -251,8 +251,39 @@ public class Tank implements GameEntity
     @Override
     public synchronized void Tick(GameManager manager)
     {
-        if(dead)
+        if(MoveMethod())
             return;
+        
+        if(keys.get(Controls.commands.get("fire")) && cooldown <= 0)
+        {
+            // ammo.getClass().getDeclaredConstructor(null);
+            Ammo a = ammo.newInstance(Spawnx(), Spawny(), rot - Math.PI / 2, f);
+            a.setInvincible(this, 50);
+            a.parent = this;
+            manager.AddEntity(a);
+            manager.PlayMusic(Const.Music.shoot);
+            // Log.log(ammo.cooldown);
+            ammo.shellCount--;
+            if(ammo.shellCount <= 0)
+            {
+                ammo = Ammo.getDefaultAmmo();
+            }
+            cooldown = ammo.cooldown;
+        }
+        else if(cooldown > 0)
+        {
+            cooldown--;
+        }
+        CheckCollision();
+        prevX = x;
+        prevY = y;
+        prevRot = rot;
+    }
+    
+    public boolean MoveMethod()
+    {
+        if(dead)
+            return true;
         boolean mozog = false;
         if(keys.get(Controls.commands.get("w")))
         {
@@ -280,31 +311,7 @@ public class Tank implements GameEntity
             rotateTick = 0;
         else
             rotateTick++;
-        
-        if(keys.get(Controls.commands.get("fire")) && cooldown <= 0)
-        {
-            // ammo.getClass().getDeclaredConstructor(null);
-            Ammo a = ammo.newInstance(Spawnx(), Spawny(), rot - Math.PI / 2, f);
-            a.setInvincible(this, 50);
-            a.parent = this;
-            manager.AddEntity(a);
-            manager.PlayMusic(Const.Music.shoot);
-            // Log.log(ammo.cooldown);
-            ammo.shellCount--;
-            if(ammo.shellCount <= 0)
-            {
-                ammo = Ammo.getDefaultAmmo();
-            }
-            cooldown = ammo.cooldown;
-        }
-        else if(cooldown > 0)
-        {
-            cooldown--;
-        }
-        CheckCollision();
-        prevX = x;
-        prevY = y;
-        prevRot = rot;
+        return false;
     }
     
     /**
@@ -391,6 +398,7 @@ public class Tank implements GameEntity
             {
                 if(f.mezok[i][j].lineRectColl(x, y, rot, colW, colH))
                 {
+                    Log.log("Collision");
                     x = prevX;
                     y = prevY;
                     rot = prevRot;
@@ -590,6 +598,7 @@ public class Tank implements GameEntity
     @Override
     public void setFromJSON(JSONObject set)
     {
+        remove = false;
         x = set.getDouble("x");
         y = set.getDouble("y");
         rot = set.getDouble("rot");
@@ -610,6 +619,22 @@ public class Tank implements GameEntity
             ammo = Ammo.getDefaultAmmo();
         }
         ammo.shellCount = set.getInt("count");
+    }
+    
+    public JSONObject SendClient()
+    {
+        JSONObject ret = new JSONObject();
+        ret.put("x", x);
+        ret.put("y", y);
+        ret.put("rot", rot);
+        return ret;
+    }
+    
+    public void ReceiveServer(JSONObject set)
+    {
+        x = set.getDouble("x");
+        y = set.getDouble("y");
+        rot = set.getDouble("rot");
     }
     
 }

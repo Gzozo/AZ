@@ -15,6 +15,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.channels.ClosedChannelException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -37,7 +38,8 @@ public class GamePanel extends JPanel implements GameManager
     private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = Logger.getLogger(GameManager.class.getName());
     
-    ArrayList<Tank> players = new ArrayList<>();
+    //ArrayList<Tank> players = new ArrayList<>();
+    HashMap<String, Tank> players = new HashMap<>();
     ArrayList<GameEntity> entities = new ArrayList<>();
     ArrayList<GameEntity> localEffects = new ArrayList<>();
     ReentrantLock lock = new ReentrantLock();
@@ -133,12 +135,20 @@ public class GamePanel extends JPanel implements GameManager
         {
             while(true)
             {
-                Tick();
                 try
                 {
+                    Tick();
                     Thread.sleep(17);
                 }
+                catch(SocketException e)
+                {
+                    break;
+                }
                 catch(InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+                catch(IOException e)
                 {
                     e.printStackTrace();
                 }
@@ -181,6 +191,8 @@ public class GamePanel extends JPanel implements GameManager
         pixels = new int[(int) (d.getWidth() * d.getHeight())];
         activePlayer = new Tank(_tankWidth * gridSize.intValue() / _gridSize,
                 _tankHeight * gridSize.intValue() / _gridSize);
+        players.put(name, activePlayer);
+        activePlayer.f = f;
         activePlayer.setFromJSON(config.getJSONObject(Const.Tank));
         Arrays.fill(pixels, 0);
     }
@@ -221,6 +233,14 @@ public class GamePanel extends JPanel implements GameManager
         dp.setData(buf);
         dp.setLength(packetSize);
         JSONObject receive;
+        try
+        {
+            client.setSoTimeout(1000);
+        }
+        catch(SocketException e)
+        {
+            e.printStackTrace();
+        }
         while(true)
         {
             try
@@ -230,6 +250,11 @@ public class GamePanel extends JPanel implements GameManager
                 receive = new JSONObject(new String(buf));
                 processData(receive);
                 repaint();
+            }
+            catch(ClosedChannelException e)
+            {
+                lock.unlock();
+                break;
             }
             catch(Exception e)
             {
@@ -274,26 +299,34 @@ public class GamePanel extends JPanel implements GameManager
         if(receive.has(Const.players))
         {
             JSONObject entity = receive.getJSONObject(Const.players);
-            players.forEach(x -> x.Erase((Graphics2D) moving.getGraphics()));
+            players.forEach((s, x) ->
+            {
+                x.Erase((Graphics2D) moving.getGraphics());
+                x.remove = true;
+            });
             int i = 0, j = 0;
             Iterator<String> keys = entity.keys();
-            for(; i < entity.length() && j < players.size(); i++, j++)
+            for(; keys.hasNext(); )
             {
-                players.get(i).setFromJSON(entity.getJSONObject(keys.next()));
+                String k = keys.next();
+                if(name.equals(k))
+                    continue;
+                players.get(k).setFromJSON(entity.getJSONObject(k));
+                
             }
-            while(i < entity.length())
+            while(keys.hasNext())
             {
+                String k = keys.next();
                 Tank a = new Tank(_tankWidth * gridSize.intValue() / _gridSize,
                         _tankHeight * gridSize.intValue() / _gridSize);
-                a.setFromJSON(entity.getJSONObject(keys.next()));
-                players.add(a);
-                i++;
+                a.setFromJSON(entity.getJSONObject(k));
+                players.put(k, a);
             }
             if(entity.length() < players.size())
             {
-                players.subList(i, players.size()).clear();
+                players.values().removeIf(x -> x.remove);
             }
-            activePlayer.setFromJSON(entity.getJSONObject(name));
+            //activePlayer.setFromJSON(entity.getJSONObject(name));
             
         }
         if(receive.has(Const.config))
@@ -350,24 +383,22 @@ public class GamePanel extends JPanel implements GameManager
      * @param e      A billentyű
      * @param lenyom lenyomta e?
      */
-    public void SendKeys(KeyEvent e, boolean lenyom)
+    public void SendKeys(KeyEvent e, boolean lenyom) throws IOException
     {
         JSONObject keys = new JSONObject();
         keys.put(Const.pressed, lenyom);
         keys.put(Const.key, e.getKeyCode());
         JSONObject send = new JSONObject();
         send.put(Const.keyboard, keys);
+        SendData(send);
+    }
+    
+    private void SendData(JSONObject send) throws IOException
+    {
         DatagramPacket kdp = new DatagramPacket(send.toString().getBytes(), send.toString().getBytes().length);
         kdp.setAddress(serverIp);
         kdp.setPort(serverPort);
-        try
-        {
-            client.send(kdp);
-        }
-        catch(IOException e1)
-        {
-            e1.printStackTrace();
-        }
+        client.send(kdp);
     }
     
     int[] pixels;
@@ -403,7 +434,7 @@ public class GamePanel extends JPanel implements GameManager
         effects.setRGB(0, 0, (int) d.getWidth(), (int) d.getHeight(), pixels, 0, (int) d.getWidth());
         // Nem kell, a szervertõl jövõ válasz alapján rajzolunk
         entities.forEach(x -> x.Draw((Graphics2D) moving.getGraphics()));
-        players.forEach(x -> x.Draw((Graphics2D) moving.getGraphics()));
+        players.forEach((k, x) -> x.Draw((Graphics2D) moving.getGraphics()));
         localEffects.forEach(x -> x.Draw((Graphics2D) effects.getGraphics()));
         Graphics g0 = image.getGraphics();
         g0.drawImage(maze, 0, 0, null);
@@ -418,10 +449,13 @@ public class GamePanel extends JPanel implements GameManager
      * Időzítés megvalósítása, léptet
      */
     @SuppressWarnings("unchecked")
-    public void Tick()
+    public void Tick() throws IOException
     {
         repaint();
-        //		activePlayer.Tick(this);
+        activePlayer.Tick(this);
+        JSONObject send = new JSONObject();
+        send.put(Const.Tank, activePlayer.SendClient());
+        SendData(send);
         try
         {
             ((ArrayList<GameEntity>) localEffects.clone()).forEach(x -> x.Tick(this));
@@ -447,7 +481,7 @@ public class GamePanel extends JPanel implements GameManager
     
     public boolean CheckTank(Ammo ammo)
     {
-        players.forEach(x -> x.CheckDestroy(ammo));
+        players.forEach((k, x) -> x.CheckDestroy(ammo));
         return false;
     }
     
@@ -470,6 +504,7 @@ public class GamePanel extends JPanel implements GameManager
             DatagramPacket exit = new DatagramPacket(json.toString().getBytes(), json.toString().getBytes().length,
                     serverIp, serverPort);
             client.send(exit);
+            client.close();
         }
         catch(Exception e)
         {
@@ -514,9 +549,9 @@ public class GamePanel extends JPanel implements GameManager
             {
                 case KeyEvent.VK_N:
                 {
-                    f.GenerateField();
+                    /*f.GenerateField();
                     f.draw(maze.getGraphics(), d);
-                    break;
+                    break;*/
                 }
                 case KeyEvent.VK_ESCAPE:
                 {
@@ -527,7 +562,22 @@ public class GamePanel extends JPanel implements GameManager
                 }
             }
             if(!dead)
-                SendKeys(e, true);
+            {
+                if(e.getKeyCode() == KeyEvent.VK_SPACE)
+                {
+                    JSONObject send = new JSONObject();
+                    send.put(Const.Fire, true);
+                    try
+                    {
+                        SendData(send);
+                    }
+                    catch(IOException ex)
+                    {
+                        ex.printStackTrace();
+                    }
+                }
+                activePlayer.processKey(e, true);
+            }
             k.processKey(e.getKeyCode());
             RefreshAmmoLabels();
             // activePlayer.processKey(e, true);
@@ -540,7 +590,22 @@ public class GamePanel extends JPanel implements GameManager
         {
             // activePlayer.processKey(e, false);
             if(!dead)
-                SendKeys(e, false);
+            {
+                if(e.getKeyCode() == KeyEvent.VK_SPACE)
+                {
+                    JSONObject send = new JSONObject();
+                    send.put(Const.Fire, false);
+                    try
+                    {
+                        SendData(send);
+                    }
+                    catch(IOException ex)
+                    {
+                        ex.printStackTrace();
+                    }
+                }
+                activePlayer.processKey(e, false);
+            }
         }
         
     }

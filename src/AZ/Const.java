@@ -19,7 +19,8 @@ public class Const
     }
     
     //Kliens-Server JSON
-    static String clients = "Points", name = "Name", picture = "Pic", death = "Death", kill = "Kill";
+    static String clients = "Points", name = "Name", picture = "Pic", death = "Death", kill = "Kill", playerTank =
+            "Tank", Fire = "Fire";
     
     // Server JSON
     static String rejoin = "Rejoin", entities = "Entity", players = "Players", highlight = "Highlight", dead = "Dead"
