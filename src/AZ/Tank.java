@@ -609,16 +609,31 @@ public class Tank implements GameEntity
             _pic = s;
         }
         s = set.optString("ammo", "");
+        SetAmmo(s, set.optInt("count", 10));
+    }
+    
+    public void SetAmmo(String name, int count)
+    {
         try
         {
-            ammo = (Ammo) Class.forName(s).getDeclaredConstructor().newInstance();
+            ammo = (Ammo) Class.forName(name).getDeclaredConstructor().newInstance();
         }
         catch(Exception e)
         {
             e.printStackTrace();
             ammo = Ammo.getDefaultAmmo();
         }
-        ammo.shellCount = set.getInt("count");
+        ammo.shellCount = count;
+    }
+    
+    public boolean ReceiveClient(JSONObject set)
+    {
+        boolean changed = false;
+        String s = set.optString("ammo", "");
+        int count = set.optInt("count", 10);
+        changed = ammo.getClass().getName().equals(s) && ammo.shellCount == count;
+        SetAmmo(s, count);
+        return !changed;
     }
     
     public JSONObject SendClient()

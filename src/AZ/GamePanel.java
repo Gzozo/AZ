@@ -314,22 +314,23 @@ public class GamePanel extends JPanel implements GameManager
                 String k = keys.next();
                 if(name.equals(k))
                     continue;
-                players.get(k).setFromJSON(entity.getJSONObject(k));
+                if(players.containsKey(k))
+                    players.get(k).setFromJSON(entity.getJSONObject(k));
+                else
+                {
+                    Tank a = new Tank(_tankWidth * gridSize.intValue() / _gridSize,
+                            _tankHeight * gridSize.intValue() / _gridSize);
+                    a.setFromJSON(entity.getJSONObject(k));
+                    players.put(k, a);
+                }
                 
-            }
-            while(keys.hasNext())
-            {
-                String k = keys.next();
-                Tank a = new Tank(_tankWidth * gridSize.intValue() / _gridSize,
-                        _tankHeight * gridSize.intValue() / _gridSize);
-                a.setFromJSON(entity.getJSONObject(k));
-                players.put(k, a);
             }
             if(entity.length() < players.size())
             {
-                players.values().removeIf(x -> x.remove);
+                players.keySet().removeIf(x -> !entity.has(x));
             }
-            //activePlayer.setFromJSON(entity.getJSONObject(name));
+            if(activePlayer.ReceiveClient(entity.getJSONObject(name)))
+                RefreshAmmoLabels();
             
         }
         if(receive.has(Const.config))
