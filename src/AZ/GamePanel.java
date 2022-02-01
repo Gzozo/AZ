@@ -131,7 +131,7 @@ public class GamePanel extends JPanel implements GameManager
          */
         
         new Thread(this::Listening).start();
-        new Thread(() ->
+        Thread t = new Thread(() ->
         {
             while(true)
             {
@@ -153,7 +153,9 @@ public class GamePanel extends JPanel implements GameManager
                     e.printStackTrace();
                 }
             }
-        }).start();
+        });
+        t.setName("GamePanelLoop");
+        t.start();
         
         
     }
@@ -194,6 +196,7 @@ public class GamePanel extends JPanel implements GameManager
         players.put(name, activePlayer);
         activePlayer.f = f;
         activePlayer.setFromJSON(config.getJSONObject(Const.Tank));
+        activePlayer.gridSize = gridSize;
         Arrays.fill(pixels, 0);
     }
     
@@ -451,7 +454,7 @@ public class GamePanel extends JPanel implements GameManager
     @SuppressWarnings("unchecked")
     public void Tick() throws IOException
     {
-        repaint();
+        lock.lock();
         activePlayer.Tick(this);
         JSONObject send = new JSONObject();
         send.put(Const.Tank, activePlayer.SendClient());
@@ -464,6 +467,8 @@ public class GamePanel extends JPanel implements GameManager
         {
             e.printStackTrace();
         }
+        repaint();
+        lock.unlock();
     }
     
     public void AddEntity(GameEntity e)
@@ -576,7 +581,8 @@ public class GamePanel extends JPanel implements GameManager
                         ex.printStackTrace();
                     }
                 }
-                activePlayer.processKey(e, true);
+                else
+                    activePlayer.processKey(e, true);
             }
             k.processKey(e.getKeyCode());
             RefreshAmmoLabels();

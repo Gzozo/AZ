@@ -391,6 +391,7 @@ public class Tank implements GameEntity
          * if (f.mezok[gridX][gridY].lineRectColl(x, y, rot, rectWidth, rectHeight,
          * gridSize)) { x = prevX; y = prevY; rot = prevRot; }
          */
+        
         kulso:
         for(int i = Math.max(gridX - 3, 0); i < f.gridWidth && i < gridX + 3; i++)
         {
@@ -398,7 +399,6 @@ public class Tank implements GameEntity
             {
                 if(f.mezok[i][j].lineRectColl(x, y, rot, colW, colH))
                 {
-                    Log.log("Collision");
                     x = prevX;
                     y = prevY;
                     rot = prevRot;
