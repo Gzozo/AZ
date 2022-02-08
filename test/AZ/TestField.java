@@ -28,7 +28,7 @@ public class TestField
 	@Parameters
 	public static List<Object[]> parameters()
 	{
-		Random r = new Random();
+		Random r = newXRandom();
 		List<Object[]> params = new ArrayList<Object[]>();
 		for (int i = 0; i < 10; i++)
 		{

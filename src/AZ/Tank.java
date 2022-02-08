@@ -73,7 +73,7 @@ public class Tank implements GameEntity
         colX = this.rectWidth - colW;
         colY = this.rectHeight - colH;
         gridSize = grid;
-        Random r = new Random();
+       XRandom r = newXRandom();
         rot = prevRot = r.nextInt(4) * Math.PI / 2;
         for(Entry<String, Integer> entry : Controls.commands.entrySet())
         {

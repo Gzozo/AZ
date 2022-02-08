@@ -38,6 +38,8 @@ public abstract class Ammo implements GameEntity
     public String pic = "";
     public BufferedImage picture = null;
     public Tank parent;
+    XRandom r = new XRandom();
+    long seed;
     
     public Ammo(double x, double y, double rad, double speed, double rot, int lifeTime, Field f)
     {
@@ -53,6 +55,11 @@ public abstract class Ammo implements GameEntity
     public Ammo()
     {
         this(0, 0, 0, 0, 0, 0, null);
+    }
+    
+    public void setSeed(long seed)
+    {
+        r = new XRandom(seed);
     }
     
     /**
@@ -203,7 +210,7 @@ public abstract class Ammo implements GameEntity
             }
         }
         //Maybe do not generate value all the time?
-        double dist = new Random().nextDouble() * changeDir - changeDir / 2;
+        double dist = new XRandom().nextDouble() * changeDir - changeDir / 2;
         if(touchy)
         {
             setRot(-rot + dist);
@@ -263,6 +270,7 @@ public abstract class Ammo implements GameEntity
         ret.put("rad", rad);
         ret.put("color", c.getRGB());
         ret.put("type", type);
+        ret.put("seed", seed);
         
         return ret;
     }

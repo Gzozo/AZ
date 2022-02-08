@@ -331,7 +331,7 @@ public class Server extends Thread implements GameManager
     
     private void Join(DatagramPacket packet, JSONObject receive) throws IOException
     {
-        Random r = new Random();
+        XRandom r = new XRandom();
         int x = r.nextInt(width);
         int y = r.nextInt(height);
         
@@ -443,7 +443,7 @@ public class Server extends Thread implements GameManager
     
     public void AddPowerUp()
     {
-        Random r = new Random();
+        XRandom r = new XRandom();
         int x = r.nextInt(width), y = r.nextInt(height);
         
         PowerUp pu = new PowerUp(f.mezok[x][y].centerx(), f.mezok[x][y].centery(), gridSize.intValue() / 4, f,
@@ -485,7 +485,7 @@ public class Server extends Thread implements GameManager
         return hit;
     }
     
-    Random chance = new Random();
+    XRandom chance = new XRandom();
     
     /**
      * Időzítés megvalósítása, léptet
