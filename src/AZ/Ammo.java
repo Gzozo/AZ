@@ -39,7 +39,6 @@ public abstract class Ammo implements GameEntity
     public BufferedImage picture = null;
     public Tank parent;
     XRandom r = new XRandom();
-    long seed;
     
     public Ammo(double x, double y, double rad, double speed, double rot, int lifeTime, Field f)
     {
@@ -166,7 +165,6 @@ public abstract class Ammo implements GameEntity
         {
             int gridX = (int) Math.floor(x / f.gridSize.intValue());
             int gridY = (int) Math.floor(y / f.gridSize.intValue());
-            kulso:
             for(int i = Math.max(gridX - 1, 0); i < f.gridWidth && i < gridX + 1; i++)
             {
                 for(int j = Math.max(gridY - 1, 0); j < f.gridHeigth && j < gridY + 1; j++)
@@ -210,7 +208,7 @@ public abstract class Ammo implements GameEntity
             }
         }
         //Maybe do not generate value all the time?
-        double dist = new XRandom().nextDouble() * changeDir - changeDir / 2;
+        double dist = r.nextDouble() * changeDir - changeDir / 2;
         if(touchy)
         {
             setRot(-rot + dist);
@@ -270,7 +268,7 @@ public abstract class Ammo implements GameEntity
         ret.put("rad", rad);
         ret.put("color", c.getRGB());
         ret.put("type", type);
-        ret.put("seed", seed);
+        ret.put("random", r.toJSON());
         
         return ret;
     }
@@ -286,6 +284,7 @@ public abstract class Ammo implements GameEntity
         c = new Color(set.getInt("color"));
         type = set.getString("type");
         setPic(set.optString("pic", ""));
+        r.fromJSON(set.getJSONObject("random"));
     }
     
     void setRot(double r)
