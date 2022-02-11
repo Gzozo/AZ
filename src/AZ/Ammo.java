@@ -160,71 +160,96 @@ public abstract class Ammo implements GameEntity
         double ratio = manager.ellapsedTime() / Const.framerate;
         //Log.log(ratio + " " + manager.ellapsedTime() + " " + System.currentTimeMillis() + " " + (manager instanceof
         // Server));
-        x += speedx * ratio;
-        y += speedy * ratio;
-        boolean touchx = false, touchy = false;
-        boolean hitwall = false;
-        //if(fal && (x != prevx || y != prevy))
-        if(fal)
+        int step = (int) Math.floor(speed / (rad / 2)) + 1;//Const given speed
+        
+        double one = speed * ratio / step;
+        double onex = Math.cos(rot) * one;
+        double oney = Math.sin(rot) * one;
+        
+        /*double distx = speedx * ratio, disty = speedy * ratio;
+        
+        int stepx = (int) (Math.floor(Math.abs(distx) / rad / 2) + 1);
+        int stepy = (int) (Math.floor(Math.abs(disty) / rad / 2) + 1);
+        int step = Math.max(stepx, stepy);
+        double onex = distx / step, oney = disty / step;*/
+        while(step > 0)
         {
-            int gridX = (int) Math.floor(x / f.gridSize.intValue());
-            int gridY = (int) Math.floor(y / f.gridSize.intValue());
-            for(int i = Math.max(gridX - 1, 0); i < f.gridWidth && i < gridX + 1; i++)
+            x += onex;
+            y += oney;
+            step--;
+        
+        
+        
+        /*x += speedx;
+        y += speedy;*/
+            boolean touchx = false, touchy = false;
+            boolean hitwall = false;
+            //if(fal && (x != prevx || y != prevy))
+            if(fal)
             {
-                for(int j = Math.max(gridY - 1, 0); j < f.gridHeigth && j < gridY + 1; j++)
+                int gridX = (int) Math.floor(x / f.gridSize.intValue());
+                int gridY = (int) Math.floor(y / f.gridSize.intValue());
+                for(int i = Math.max(gridX, 0); i < f.gridWidth && i < gridX + 1; i++)
                 {
-                    int ret = f.mezok[i][j].Collision(x, y, rad / 2);
-                    if(ret != 0)
+                    for(int j = Math.max(gridY, 0); j < f.gridHeigth && j < gridY + 1; j++)
                     {
-                        if((ret & 48) == 0)
+                        int ret = f.mezok[i][j].Collision(x, y, rad / 2);
+                        if(ret != 0)
                         {
-                            if((ret & 1) != 0)
+                            if((ret & 48) == 0)
                             {
-                                touchx = true;
+                                if((ret & 1) != 0)
+                                {
+                                    touchx = true;
+                                }
+                                if((ret & 2) != 0)
+                                {
+                                    touchy = true;
+                                }
                             }
-                            if((ret & 2) != 0)
+                            else
                             {
-                                touchy = true;
+                                if((ret & 32) != 0)
+                                    if((ret & 0x08) == 0)
+                                        touchx = speedx > 0;
+                                    else
+                                        touchx = speedx < 0;
+                                if((ret & 16) != 0)
+                                    if((ret & 04) == 0)
+                                        touchy = speedy > 0;
+                                    else
+                                        touchy = speedy < 0;
                             }
+                            hitwall = true;
+                            if(music)
+                            {
+                                music = false;
+                                // manager.PlayMusic(Const.Music.hitWall);
+                            }
+                            //break kulso;
                         }
-                        else
-                        {
-                            if((ret & 32) != 0)
-                                if((ret & 0x08) == 0)
-                                    touchx = speedx > 0;
-                                else
-                                    touchx = speedx < 0;
-                            if((ret & 16) != 0)
-                                if((ret & 04) == 0)
-                                    touchy = speedy > 0;
-                                else
-                                    touchy = speedy < 0;
-                        }
-                        hitwall = true;
-                        if(music)
-                        {
-                            music = false;
-                            // manager.PlayMusic(Const.Music.hitWall);
-                        }
-                        //break kulso;
                     }
                 }
             }
+            //Maybe do not generate value all the time?
+            if(touchy)
+            {
+                double dist = r.nextDouble() * changeDir - changeDir / 2;
+                setRot(-rot + dist);
+                onex = Math.cos(rot) * one;
+                oney = Math.sin(rot) * one;
+            }
+            if(touchx)
+            {
+                double dist = r.nextDouble() * changeDir - changeDir / 2;
+                setRot(Math.PI - rot + dist);
+                onex = Math.cos(rot) * one;
+                oney = Math.sin(rot) * one;
+            }
+            if(!hitwall)
+                music = true;
         }
-        //Maybe do not generate value all the time?
-        if(touchy)
-        {
-            double dist = r.nextDouble() * changeDir - changeDir / 2;
-            setRot(-rot + dist);
-        }
-        if(touchx)
-        {
-            double dist = r.nextDouble() * changeDir - changeDir / 2;
-            setRot(Math.PI - rot + dist);
-        }
-        if(!hitwall)
-            music = true;
-        lifeTime--;
+        lifeTime -= ratio;
         if(lifeTime <= 0)
         {
             OnDeath(manager);
