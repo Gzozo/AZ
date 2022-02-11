@@ -40,7 +40,9 @@ public class GamePanel extends JPanel implements GameManager
     
     //ArrayList<Tank> players = new ArrayList<>();
     HashMap<String, Tank> players = new HashMap<>();
-    ArrayList<GameEntity> entities = new ArrayList<>();
+    HashMap<Integer, GameEntity> entities = new HashMap<Integer, GameEntity>();
+    //HashMap<Integer, GameEntity> localEffects = new HashMap<Integer, GameEntity>();
+    //ArrayList<GameEntity> entities = new ArrayList<>();
     ArrayList<GameEntity> localEffects = new ArrayList<>();
     ReentrantLock lock = new ReentrantLock();
     Tank activePlayer = new Tank();
@@ -262,13 +264,18 @@ public class GamePanel extends JPanel implements GameManager
                 //lock.unlock();
                 break;
             }
+            catch(SocketException e)
+            {
+            
+            }
             catch(Exception e)
             {
                 e.printStackTrace();
             }
             finally
             {
-                lock.unlock();
+                if(lock.isHeldByCurrentThread())
+                    lock.unlock();
             }
         }
     }
@@ -283,26 +290,21 @@ public class GamePanel extends JPanel implements GameManager
         if(receive.has(Const.entities))
         {
             JSONObject entity = receive.getJSONObject(Const.entities);
-            entities.forEach(x -> x.Erase((Graphics2D) moving.getGraphics()));
+            entities.values().forEach(x -> x.Erase((Graphics2D) moving.getGraphics()));
             int i = 0, j = 0;
-            for(; i < entity.length() && j < entities.size(); i++, j++)
+            entities.keySet().removeIf(x -> !entity.has(x + ""));
+            //localEffects.keySet().removeIf(x -> !entity.has(x + ""));
+            for(String s : entity.keySet())
             {
-                entities.get(i).setFromJSON(entity.getJSONObject(i + ""));
-            }
-            while(i < entity.length())
-            {
-                Ammo a = new AP(0, 0, 0, f);
-                a.setFromJSON(entity.getJSONObject(i + ""));
-                entities.add(a);
-                /*Ammo b = new AP(0, 0, 0, f);
-                b.setFromJSON(entity.getJSONObject(i + ""));
-                b.c = Color.RED;*/
-                localEffects.add(a);
-                i++;
-            }
-            if(entity.length() < entities.size())
-            {
-                entities.subList(i, entities.size()).clear();
+                if(entities.containsKey(Integer.valueOf(s)))
+                    entities.get(Integer.valueOf(s)).setFromJSON(entity.getJSONObject(s));
+                else
+                {
+                    Ammo a = new AP(0, 0, 0, f);
+                    a.setFromJSON(entity.getJSONObject(s));
+                    entities.put(Integer.valueOf(s), a);
+                    //localEffects.add(a);
+                }
             }
             //Log.log(entities.size());
         }
@@ -336,7 +338,7 @@ public class GamePanel extends JPanel implements GameManager
             {
                 players.keySet().removeIf(x -> !entity.has(x));
             }
-            if(activePlayer.ReceiveClient(entity.getJSONObject(name)))
+            if(entity.has(name) && activePlayer.ReceiveClient(entity.getJSONObject(name)))
                 RefreshAmmoLabels();
             
         }
@@ -444,7 +446,7 @@ public class GamePanel extends JPanel implements GameManager
         // effects.getGraphics().clearRect(0, 0, d.width, d.height);
         effects.setRGB(0, 0, (int) d.getWidth(), (int) d.getHeight(), pixels, 0, (int) d.getWidth());
         // Nem kell, a szervertõl jövõ válasz alapján rajzolunk
-        entities.forEach(x -> x.Draw((Graphics2D) moving.getGraphics()));
+        entities.values().forEach(x -> x.Draw((Graphics2D) moving.getGraphics()));
         players.forEach((k, x) -> x.Draw((Graphics2D) moving.getGraphics()));
         localEffects.forEach(x -> x.Draw((Graphics2D) effects.getGraphics()));
         Graphics g0 = image.getGraphics();
@@ -472,6 +474,7 @@ public class GamePanel extends JPanel implements GameManager
         try
         {
             ((ArrayList<GameEntity>) localEffects.clone()).forEach(x -> x.Tick(this));
+            ((HashMap<Integer, GameEntity>) entities.clone()).values().forEach(x -> x.Tick(this));
         }
         catch(Exception e)
         {

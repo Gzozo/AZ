@@ -72,7 +72,9 @@ public class Server extends Thread implements GameManager
     
     Dictionary players = new Dictionary();
     
-    ArrayList<GameEntity> entities = new ArrayList<>();
+    //ArrayList<GameEntity> entities = new ArrayList<>();
+    HashMap<Integer, GameEntity> entities = new HashMap<Integer, GameEntity>();
+    Integer size = 0;
     ArrayList<String> music = new ArrayList<>();
     
     /**
@@ -122,7 +124,7 @@ public class Server extends Thread implements GameManager
         {
             f.GenerateField();
             players.values().removeIf(x -> !x.joined);
-            entities.removeIf(x -> x instanceof PowerUp);
+            entities.values().removeIf(x -> x instanceof PowerUp);
             JSONObject rejoin = new JSONObject();
             rejoin.put(Const.rejoin, true);
             DatagramPacket dp = new DatagramPacket(rejoin.toString().getBytes(), rejoin.toString().getBytes().length);
@@ -158,7 +160,7 @@ public class Server extends Thread implements GameManager
         {
             ellapsedTime = System.currentTimeMillis() - Time;
             Time = System.currentTimeMillis();
-            ((ArrayList<GameEntity>) entities.clone()).forEach(x -> x.Tick(this));
+            ((HashMap<Integer, GameEntity>) entities.clone()).values().forEach(x -> x.Tick(this));
             String data = AllData();
             DatagramPacket dp = new DatagramPacket(data.getBytes(), data.getBytes().length);
             int alive = 0;
@@ -199,9 +201,13 @@ public class Server extends Thread implements GameManager
     {
         JSONObject ret = new JSONObject();
         JSONObject entity = new JSONObject();
-        for(int i = 0; i < entities.size(); i++)
+        /*for(int i = 0; i < entities.size(); i++)
         {
             entity.put(i + "", entities.get(i).toJSON());
+        }*/
+        for(Entry<Integer, GameEntity> pair : entities.entrySet())
+        {
+            entity.put(pair.getKey() + "", pair.getValue().toJSON());
         }
         ret.put(Const.entities, entity);
         
@@ -412,6 +418,7 @@ public class Server extends Thread implements GameManager
         try
         {
             entities.clear();
+            size = 0;
             state = GameState.PLAYING;
             players.values().forEach(x -> x.t.ammo = Ammo.getDefaultAmmo());
             Log.log("StartGame");
@@ -430,7 +437,8 @@ public class Server extends Thread implements GameManager
     {
         synchronized(entities)
         {
-            entities.add(e);
+            entities.put(size, e);
+            size++;
         }
     }
     
@@ -438,7 +446,7 @@ public class Server extends Thread implements GameManager
     {
         synchronized(entities)
         {
-            entities.remove(e);
+            entities.values().remove(e);
         }
     }
     
@@ -500,7 +508,7 @@ public class Server extends Thread implements GameManager
         try
         {
             players.forEach((x, y) -> y.t.Tick(this));
-            ((ArrayList<GameEntity>) entities.clone()).forEach(x -> x.Tick(this));
+            ((HashMap<Integer, GameEntity>) entities.clone()).values().forEach(x -> x.Tick(this));
             double dice = chance.nextDouble();
             if(dice <= chancePU)
                 AddPowerUp();
