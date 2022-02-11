@@ -49,7 +49,7 @@ public class HE extends Ammo
      */
     public void Detonate(GameManager manager)
     {
-        Random r = new Random();
+        XRandom r = new XRandom();
         for(int i = 0; i < sharpnelCount; i++)
         {
             Sharpnel s = new Sharpnel(x, y, r.nextDouble() * 2 * Math.PI, f);

@@ -21,7 +21,7 @@ public class Dictionary
     
     public Client get(SocketAddress sa)
     {
-        return soc2cli.get(sa);
+        return soc2cli.getOrDefault(sa, new Client());
     }
     
     public SocketAddress get(Client c)

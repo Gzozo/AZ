@@ -38,6 +38,7 @@ public abstract class Ammo implements GameEntity
     public String pic = "";
     public BufferedImage picture = null;
     public Tank parent;
+    XRandom r = new XRandom();
     
     public Ammo(double x, double y, double rad, double speed, double rot, int lifeTime, Field f)
     {
@@ -53,6 +54,11 @@ public abstract class Ammo implements GameEntity
     public Ammo()
     {
         this(0, 0, 0, 0, 0, 0, null);
+    }
+    
+    public void setSeed(long seed)
+    {
+        r = new XRandom(seed);
     }
     
     /**
@@ -141,7 +147,7 @@ public abstract class Ammo implements GameEntity
     }
     
     boolean music = true;
-    final double changeDir = 0.1;
+    final double changeDir = 0;
     
     /**
      * Tick()
@@ -151,70 +157,99 @@ public abstract class Ammo implements GameEntity
      */
     public synchronized void Tick(GameManager manager, boolean fal)
     {
-        x += speedx;
-        y += speedy;
-        boolean touchx = false, touchy = false;
-        boolean hitwall = false;
-        if(fal && (x != prevx || y != prevy))
+        double ratio = manager.ellapsedTime() / Const.framerate;
+        //Log.log(ratio + " " + manager.ellapsedTime() + " " + System.currentTimeMillis() + " " + (manager instanceof
+        // Server));
+        int step = (int) Math.floor(speed / (rad / 2)) + 1;//Const given speed
+        
+        double one = speed * ratio / step;
+        double onex = Math.cos(rot) * one;
+        double oney = Math.sin(rot) * one;
+        
+        /*double distx = speedx * ratio, disty = speedy * ratio;
+        
+        int stepx = (int) (Math.floor(Math.abs(distx) / rad / 2) + 1);
+        int stepy = (int) (Math.floor(Math.abs(disty) / rad / 2) + 1);
+        int step = Math.max(stepx, stepy);
+        double onex = distx / step, oney = disty / step;*/
+        while(step > 0)
         {
-            int gridX = (int) Math.floor(x / f.gridSize.intValue());
-            int gridY = (int) Math.floor(y / f.gridSize.intValue());
-            kulso:
-            for(int i = Math.max(gridX - 1, 0); i < f.gridWidth && i < gridX + 1; i++)
+            x += onex;
+            y += oney;
+            step--;
+        
+        
+        
+        /*x += speedx;
+        y += speedy;*/
+            boolean touchx = false, touchy = false;
+            boolean hitwall = false;
+            //if(fal && (x != prevx || y != prevy))
+            if(fal)
             {
-                for(int j = Math.max(gridY - 1, 0); j < f.gridHeigth && j < gridY + 1; j++)
+                int gridX = (int) Math.floor(x / f.gridSize.intValue());
+                int gridY = (int) Math.floor(y / f.gridSize.intValue());
+                for(int i = Math.max(gridX, 0); i < f.gridWidth && i < gridX + 1; i++)
                 {
-                    int ret = f.mezok[i][j].Collision(x, y, rad / 2);
-                    if(ret != 0)
+                    for(int j = Math.max(gridY, 0); j < f.gridHeigth && j < gridY + 1; j++)
                     {
-                        if((ret & 48) == 0)
+                        int ret = f.mezok[i][j].Collision(x, y, rad / 2);
+                        if(ret != 0)
                         {
-                            if((ret & 1) != 0)
+                            if((ret & 48) == 0)
                             {
-                                touchx = true;
+                                if((ret & 1) != 0)
+                                {
+                                    touchx = true;
+                                }
+                                if((ret & 2) != 0)
+                                {
+                                    touchy = true;
+                                }
                             }
-                            if((ret & 2) != 0)
+                            else
                             {
-                                touchy = true;
+                                if((ret & 32) != 0)
+                                    if((ret & 0x08) == 0)
+                                        touchx = speedx > 0;
+                                    else
+                                        touchx = speedx < 0;
+                                if((ret & 16) != 0)
+                                    if((ret & 04) == 0)
+                                        touchy = speedy > 0;
+                                    else
+                                        touchy = speedy < 0;
                             }
+                            hitwall = true;
+                            if(music)
+                            {
+                                music = false;
+                                // manager.PlayMusic(Const.Music.hitWall);
+                            }
+                            //break kulso;
                         }
-                        else
-                        {
-                            if((ret & 32) != 0)
-                                if((ret & 0x08) == 0)
-                                    touchx = speedx > 0;
-                                else
-                                    touchx = speedx < 0;
-                            if((ret & 16) != 0)
-                                if((ret & 04) == 0)
-                                    touchy = speedy > 0;
-                                else
-                                    touchy = speedy < 0;
-                        }
-                        hitwall = true;
-                        if(music)
-                        {
-                            music = false;
-                            // manager.PlayMusic(Const.Music.hitWall);
-                        }
-                        //break kulso;
                     }
                 }
             }
+            //Maybe do not generate value all the time?
+            if(touchy)
+            {
+                double dist = r.nextDouble() * changeDir - changeDir / 2;
+                setRot(-rot + dist);
+                onex = Math.cos(rot) * one;
+                oney = Math.sin(rot) * one;
+            }
+            if(touchx)
+            {
+                double dist = r.nextDouble() * changeDir - changeDir / 2;
+                setRot(Math.PI - rot + dist);
+                onex = Math.cos(rot) * one;
+                oney = Math.sin(rot) * one;
+            }
+            if(!hitwall)
+                music = true;
         }
-        //Maybe do not generate value all the time?
-        double dist = new Random().nextDouble() * changeDir - changeDir / 2;
-        if(touchy)
-        {
-            setRot(-rot + dist);
-        }
-        if(touchx)
-        {
-            setRot(Math.PI - rot + dist);
-        }
-        if(!hitwall)
-            music = true;
-        lifeTime--;
+        lifeTime -= ratio;
         if(lifeTime <= 0)
         {
             OnDeath(manager);
@@ -259,10 +294,13 @@ public abstract class Ammo implements GameEntity
         ret.put("x", x);
         ret.put("y", y);
         ret.put("speedx", speedx);
-        ret.put("speedy", speedx);
+        ret.put("speedy", speedy);
         ret.put("rad", rad);
         ret.put("color", c.getRGB());
         ret.put("type", type);
+        ret.put("random", r.toJSON());
+        ret.put("speed", speed);
+        ret.put("rot", rot);
         
         return ret;
     }
@@ -272,12 +310,15 @@ public abstract class Ammo implements GameEntity
     {
         x = set.getDouble("x");
         y = set.getDouble("y");
+        speed = set.getDouble("speed");
+        setRot(set.getDouble("rot"));
         speedx = set.getDouble("speedx");
         speedy = set.getDouble("speedy");
         rad = set.getDouble("rad");
         c = new Color(set.getInt("color"));
         type = set.getString("type");
         setPic(set.optString("pic", ""));
+        r.fromJSON(set.getJSONObject("random"));
     }
     
     void setRot(double r)

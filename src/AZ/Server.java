@@ -2,17 +2,12 @@ package AZ;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.Executors;
@@ -22,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -30,6 +24,8 @@ import org.json.JSONObject;
  */
 public class Server extends Thread implements GameManager
 {
+    private long ellapsedTime;
+    
     /**
      * A játék állapota
      * Mutatja a felhasználónak az állapotot, és tárolja hogy meghalhat e a tank
@@ -72,10 +68,13 @@ public class Server extends Thread implements GameManager
     AtomicInteger gridSize = new AtomicInteger(25);
     ReentrantLock lock = new ReentrantLock();
     boolean statsChanged = false;
+    long Time;
     
     Dictionary players = new Dictionary();
     
-    ArrayList<GameEntity> entities = new ArrayList<>();
+    //ArrayList<GameEntity> entities = new ArrayList<>();
+    HashMap<Integer, GameEntity> entities = new HashMap<Integer, GameEntity>();
+    Integer size = 0;
     ArrayList<String> music = new ArrayList<>();
     
     /**
@@ -111,6 +110,8 @@ public class Server extends Thread implements GameManager
         f.setGridSize(refer);
         
         state = GameState.JOINING;
+        Time = System.currentTimeMillis();
+        ellapsedTime = 0;
     }
     
     /**
@@ -123,7 +124,7 @@ public class Server extends Thread implements GameManager
         {
             f.GenerateField();
             players.values().removeIf(x -> !x.joined);
-            entities.removeIf(x -> x instanceof PowerUp);
+            entities.values().removeIf(x -> x instanceof PowerUp);
             JSONObject rejoin = new JSONObject();
             rejoin.put(Const.rejoin, true);
             DatagramPacket dp = new DatagramPacket(rejoin.toString().getBytes(), rejoin.toString().getBytes().length);
@@ -157,7 +158,9 @@ public class Server extends Thread implements GameManager
         lock.lock();
         try
         {
-            ((ArrayList<GameEntity>) entities.clone()).forEach(x -> x.Tick(this));
+            ellapsedTime = System.currentTimeMillis() - Time;
+            Time = System.currentTimeMillis();
+            ((HashMap<Integer, GameEntity>) entities.clone()).values().forEach(x -> x.Tick(this));
             String data = AllData();
             DatagramPacket dp = new DatagramPacket(data.getBytes(), data.getBytes().length);
             int alive = 0;
@@ -198,9 +201,13 @@ public class Server extends Thread implements GameManager
     {
         JSONObject ret = new JSONObject();
         JSONObject entity = new JSONObject();
-        for(int i = 0; i < entities.size(); i++)
+        /*for(int i = 0; i < entities.size(); i++)
         {
             entity.put(i + "", entities.get(i).toJSON());
+        }*/
+        for(Entry<Integer, GameEntity> pair : entities.entrySet())
+        {
+            entity.put(pair.getKey() + "", pair.getValue().toJSON());
         }
         ret.put(Const.entities, entity);
         
@@ -281,6 +288,20 @@ public class Server extends Thread implements GameManager
                         Tank t = players.get(packet.getSocketAddress()).t;
                         t.processKey(keys.getInt(Const.key), keys.getBoolean(Const.pressed));
                     }
+                    //Receive x,y,rot
+                    if(receive.has(Const.playerTank))
+                    {
+                        Tank t = players.get(packet.getSocketAddress()).t;
+                        if(t != null)
+                            t.ReceiveServer(receive.getJSONObject(Const.playerTank));
+                    }
+                    //Fire key pressed or released
+                    if(receive.has(Const.Fire))
+                    {
+                        Tank t = players.get(packet.getSocketAddress()).t;
+                        if(t != null)
+                            t.processKey(Controls.commands.get("fire"), receive.getBoolean(Const.Fire));
+                    }
                     if(receive.has(Const.disconnect))
                     {
                         Client c = players.remove(packet.getSocketAddress());
@@ -317,7 +338,7 @@ public class Server extends Thread implements GameManager
     
     private void Join(DatagramPacket packet, JSONObject receive) throws IOException
     {
-        Random r = new Random();
+        XRandom r = new XRandom();
         int x = r.nextInt(width);
         int y = r.nextInt(height);
         
@@ -352,10 +373,6 @@ public class Server extends Thread implements GameManager
                 nameCheck = name + num;
             }
             c.name = nameCheck;
-            /*int sum = players.values().stream().mapToInt(client -> client.name == c.name ? 1 : 0)
-            .sum();
-            if(sum > 0)
-                c.name += "" + (sum + 1);*/
             c.picture = kep;
             players.put(packet.getSocketAddress(), c);
             Log.log("New Player: " + packet.getSocketAddress());
@@ -401,6 +418,7 @@ public class Server extends Thread implements GameManager
         try
         {
             entities.clear();
+            size = 0;
             state = GameState.PLAYING;
             players.values().forEach(x -> x.t.ammo = Ammo.getDefaultAmmo());
             Log.log("StartGame");
@@ -419,7 +437,8 @@ public class Server extends Thread implements GameManager
     {
         synchronized(entities)
         {
-            entities.add(e);
+            entities.put(size, e);
+            size++;
         }
     }
     
@@ -427,13 +446,13 @@ public class Server extends Thread implements GameManager
     {
         synchronized(entities)
         {
-            entities.remove(e);
+            entities.values().remove(e);
         }
     }
     
     public void AddPowerUp()
     {
-        Random r = new Random();
+        XRandom r = new XRandom();
         int x = r.nextInt(width), y = r.nextInt(height);
         
         PowerUp pu = new PowerUp(f.mezok[x][y].centerx(), f.mezok[x][y].centery(), gridSize.intValue() / 4, f,
@@ -475,7 +494,7 @@ public class Server extends Thread implements GameManager
         return hit;
     }
     
-    Random chance = new Random();
+    XRandom chance = new XRandom();
     
     /**
      * Időzítés megvalósítása, léptet
@@ -484,10 +503,12 @@ public class Server extends Thread implements GameManager
     void Tick()
     {
         lock.lock();
+        ellapsedTime = System.currentTimeMillis() - Time;
+        Time = System.currentTimeMillis();
         try
         {
             players.forEach((x, y) -> y.t.Tick(this));
-            ((ArrayList<GameEntity>) entities.clone()).forEach(x -> x.Tick(this));
+            ((HashMap<Integer, GameEntity>) entities.clone()).values().forEach(x -> x.Tick(this));
             double dice = chance.nextDouble();
             if(dice <= chancePU)
                 AddPowerUp();
@@ -528,5 +549,11 @@ public class Server extends Thread implements GameManager
     public void PlayMusic(String f)
     {
         music.add(f);
+    }
+    
+    @Override
+    public long ellapsedTime()
+    {
+        return ellapsedTime;
     }
 }

@@ -10,6 +10,7 @@ public class Const
     static String IconFile = "az.png";
     static String ServerIP = "IP", ServerPort = "Port", ClientPort = "CPort", Selected = "Tank", Keys = "Keys",
             playerName = "Name";
+    static double framerate = 17;
     
     public static class Music
     {
@@ -19,7 +20,8 @@ public class Const
     }
     
     //Kliens-Server JSON
-    static String clients = "Points", name = "Name", picture = "Pic", death = "Death", kill = "Kill";
+    static String clients = "Points", name = "Name", picture = "Pic", death = "Death", kill = "Kill", playerTank =
+            "Tank", Fire = "Fire";
     
     // Server JSON
     static String rejoin = "Rejoin", entities = "Entity", players = "Players", highlight = "Highlight", dead = "Dead"

@@ -189,7 +189,7 @@ public class Field
         elerni--;
         elert.add(mezok[0][0]);
         
-        Random r = new Random(seed);
+        XRandom r = new XRandom(seed);
         int megTorFal = 300;
         
         while(elerni > 0 /* elert.size() > 0 */)

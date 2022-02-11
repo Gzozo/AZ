@@ -28,7 +28,7 @@ public class Tank implements GameEntity
     
     final double rotSpeed = 0.05, speed = 1;
     final int fireCoolDown = 15;
-    public boolean dead;
+    public boolean dead, remove = false;
     Image picture;
     BufferedImage original;
     String _pic;
@@ -73,7 +73,7 @@ public class Tank implements GameEntity
         colX = this.rectWidth - colW;
         colY = this.rectHeight - colH;
         gridSize = grid;
-        Random r = new Random();
+        XRandom r = new XRandom();
         rot = prevRot = r.nextInt(4) * Math.PI / 2;
         for(Entry<String, Integer> entry : Controls.commands.entrySet())
         {
@@ -251,35 +251,9 @@ public class Tank implements GameEntity
     @Override
     public synchronized void Tick(GameManager manager)
     {
-        if(dead)
+        double ratio = manager.ellapsedTime() / Const.framerate;
+        if(MoveMethod(ratio))
             return;
-        boolean mozog = false;
-        if(keys.get(Controls.commands.get("w")))
-        {
-            mozog = true;
-            x -= Math.sin(-rot) * speed;
-            y -= Math.cos(-rot) * speed;
-        }
-        if(keys.get(Controls.commands.get("s")))
-        {
-            mozog = true;
-            x += Math.sin(-rot) * speed;
-            y += Math.cos(-rot) * speed;
-        }
-        if(keys.get(Controls.commands.get("a")))
-        {
-            mozog = true;
-            Rotate(-rotSpeed);
-        }
-        if(keys.get(Controls.commands.get("d")))
-        {
-            mozog = true;
-            Rotate(rotSpeed);
-        }
-        if(!mozog)
-            rotateTick = 0;
-        else
-            rotateTick++;
         
         if(keys.get(Controls.commands.get("fire")) && cooldown <= 0)
         {
@@ -305,6 +279,45 @@ public class Tank implements GameEntity
         prevX = x;
         prevY = y;
         prevRot = rot;
+    }
+    
+    public boolean MoveMethod()
+    {
+        return MoveMethod(1);
+    }
+    
+    public boolean MoveMethod(double ratio)
+    {
+        if(dead)
+            return true;
+        boolean mozog = false;
+        if(keys.get(Controls.commands.get("w")))
+        {
+            mozog = true;
+            x -= Math.sin(-rot) * speed * ratio;
+            y -= Math.cos(-rot) * speed * ratio;
+        }
+        if(keys.get(Controls.commands.get("s")))
+        {
+            mozog = true;
+            x += Math.sin(-rot) * speed * ratio;
+            y += Math.cos(-rot) * speed * ratio;
+        }
+        if(keys.get(Controls.commands.get("a")))
+        {
+            mozog = true;
+            Rotate(-rotSpeed * ratio);
+        }
+        if(keys.get(Controls.commands.get("d")))
+        {
+            mozog = true;
+            Rotate(rotSpeed * ratio);
+        }
+        if(!mozog)
+            rotateTick = 0;
+        else
+            rotateTick += ratio;
+        return false;
     }
     
     /**
@@ -384,6 +397,7 @@ public class Tank implements GameEntity
          * if (f.mezok[gridX][gridY].lineRectColl(x, y, rot, rectWidth, rectHeight,
          * gridSize)) { x = prevX; y = prevY; rot = prevRot; }
          */
+        
         kulso:
         for(int i = Math.max(gridX - 3, 0); i < f.gridWidth && i < gridX + 3; i++)
         {
@@ -590,6 +604,7 @@ public class Tank implements GameEntity
     @Override
     public void setFromJSON(JSONObject set)
     {
+        remove = false;
         x = set.getDouble("x");
         y = set.getDouble("y");
         rot = set.getDouble("rot");
@@ -600,16 +615,47 @@ public class Tank implements GameEntity
             _pic = s;
         }
         s = set.optString("ammo", "");
+        SetAmmo(s, set.optInt("count", 10));
+    }
+    
+    public void SetAmmo(String name, int count)
+    {
         try
         {
-            ammo = (Ammo) Class.forName(s).getDeclaredConstructor().newInstance();
+            ammo = (Ammo) Class.forName(name).getDeclaredConstructor().newInstance();
         }
         catch(Exception e)
         {
             e.printStackTrace();
             ammo = Ammo.getDefaultAmmo();
         }
-        ammo.shellCount = set.getInt("count");
+        ammo.shellCount = count;
+    }
+    
+    public boolean ReceiveClient(JSONObject set)
+    {
+        boolean changed = false;
+        String s = set.optString("ammo", "");
+        int count = set.optInt("count", 10);
+        changed = ammo.getClass().getName().equals(s) && ammo.shellCount == count;
+        SetAmmo(s, count);
+        return !changed;
+    }
+    
+    public JSONObject SendClient()
+    {
+        JSONObject ret = new JSONObject();
+        ret.put("x", x);
+        ret.put("y", y);
+        ret.put("rot", rot);
+        return ret;
+    }
+    
+    public void ReceiveServer(JSONObject set)
+    {
+        x = set.getDouble("x");
+        y = set.getDouble("y");
+        rot = set.getDouble("rot");
     }
     
 }
