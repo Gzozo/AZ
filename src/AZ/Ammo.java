@@ -147,7 +147,7 @@ public abstract class Ammo implements GameEntity
     }
     
     boolean music = true;
-    final double changeDir = 0.1;
+    final double changeDir = 0;
     
     /**
      * Tick()

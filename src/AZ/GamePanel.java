@@ -264,7 +264,7 @@ public class GamePanel extends JPanel implements GameManager
             }
             catch(Exception e)
             {
-                //e.printStackTrace();
+                e.printStackTrace();
             }
             finally
             {
@@ -291,13 +291,13 @@ public class GamePanel extends JPanel implements GameManager
             }
             while(i < entity.length())
             {
-                Ammo a = new AP();
+                Ammo a = new AP(0, 0, 0, f);
                 a.setFromJSON(entity.getJSONObject(i + ""));
                 entities.add(a);
-                Ammo b = new AP(0, 0, 0, f);
+                /*Ammo b = new AP(0, 0, 0, f);
                 b.setFromJSON(entity.getJSONObject(i + ""));
-                b.c = Color.RED;
-                //localEffects.add(b);
+                b.c = Color.RED;*/
+                localEffects.add(a);
                 i++;
             }
             if(entity.length() < entities.size())
