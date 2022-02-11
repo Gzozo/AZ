@@ -51,6 +51,7 @@ public class GamePanel extends JPanel implements GameManager
     AtomicInteger gridSize = new AtomicInteger(_gridSize);
     private final Dimension d = new Dimension(1000, 800);
     int x, y;
+    long Time, ellapsedTime;
     
     DatagramSocket client;
     int ReceivePort;
@@ -130,6 +131,8 @@ public class GamePanel extends JPanel implements GameManager
          * activePlayer = players.get(0);
          */
         
+        Time = System.currentTimeMillis();
+        ellapsedTime = 0;
         new Thread(this::Listening).start();
         Thread t = new Thread(() ->
         {
@@ -256,12 +259,12 @@ public class GamePanel extends JPanel implements GameManager
             }
             catch(ClosedChannelException e)
             {
-                lock.unlock();
+                //lock.unlock();
                 break;
             }
             catch(Exception e)
             {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
             finally
             {
@@ -291,6 +294,10 @@ public class GamePanel extends JPanel implements GameManager
                 Ammo a = new AP();
                 a.setFromJSON(entity.getJSONObject(i + ""));
                 entities.add(a);
+                Ammo b = new AP(0, 0, 0, f);
+                b.setFromJSON(entity.getJSONObject(i + ""));
+                b.c = Color.RED;
+                //localEffects.add(b);
                 i++;
             }
             if(entity.length() < entities.size())
@@ -456,6 +463,8 @@ public class GamePanel extends JPanel implements GameManager
     public void Tick() throws IOException
     {
         lock.lock();
+        ellapsedTime = System.currentTimeMillis() - Time;
+        Time = System.currentTimeMillis();
         activePlayer.Tick(this);
         JSONObject send = new JSONObject();
         send.put(Const.Tank, activePlayer.SendClient());
@@ -470,6 +479,11 @@ public class GamePanel extends JPanel implements GameManager
         }
         repaint();
         lock.unlock();
+    }
+    
+    public long ellapsedTime()
+    {
+        return ellapsedTime;
     }
     
     public void AddEntity(GameEntity e)
@@ -487,7 +501,7 @@ public class GamePanel extends JPanel implements GameManager
     
     public boolean CheckTank(Ammo ammo)
     {
-        players.forEach((k, x) -> x.CheckDestroy(ammo));
+        //players.forEach((k, x) -> x.CheckDestroy(ammo));
         return false;
     }
     

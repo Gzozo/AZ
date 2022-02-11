@@ -10,6 +10,7 @@ public class Const
     static String IconFile = "az.png";
     static String ServerIP = "IP", ServerPort = "Port", ClientPort = "CPort", Selected = "Tank", Keys = "Keys",
             playerName = "Name";
+    static double framerate = 17;
     
     public static class Music
     {

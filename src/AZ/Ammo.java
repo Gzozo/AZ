@@ -157,11 +157,15 @@ public abstract class Ammo implements GameEntity
      */
     public synchronized void Tick(GameManager manager, boolean fal)
     {
-        x += speedx;
-        y += speedy;
+        double ratio = manager.ellapsedTime() / Const.framerate;
+        //Log.log(ratio + " " + manager.ellapsedTime() + " " + System.currentTimeMillis() + " " + (manager instanceof
+        // Server));
+        x += speedx * ratio;
+        y += speedy * ratio;
         boolean touchx = false, touchy = false;
         boolean hitwall = false;
-        if(fal && (x != prevx || y != prevy))
+        //if(fal && (x != prevx || y != prevy))
+        if(fal)
         {
             int gridX = (int) Math.floor(x / f.gridSize.intValue());
             int gridY = (int) Math.floor(y / f.gridSize.intValue());
@@ -208,13 +212,14 @@ public abstract class Ammo implements GameEntity
             }
         }
         //Maybe do not generate value all the time?
-        double dist = r.nextDouble() * changeDir - changeDir / 2;
         if(touchy)
         {
+            double dist = r.nextDouble() * changeDir - changeDir / 2;
             setRot(-rot + dist);
         }
         if(touchx)
         {
+            double dist = r.nextDouble() * changeDir - changeDir / 2;
             setRot(Math.PI - rot + dist);
         }
         if(!hitwall)
@@ -264,11 +269,13 @@ public abstract class Ammo implements GameEntity
         ret.put("x", x);
         ret.put("y", y);
         ret.put("speedx", speedx);
-        ret.put("speedy", speedx);
+        ret.put("speedy", speedy);
         ret.put("rad", rad);
         ret.put("color", c.getRGB());
         ret.put("type", type);
         ret.put("random", r.toJSON());
+        ret.put("speed", speed);
+        ret.put("rot", rot);
         
         return ret;
     }
@@ -278,6 +285,8 @@ public abstract class Ammo implements GameEntity
     {
         x = set.getDouble("x");
         y = set.getDouble("y");
+        speed = set.getDouble("speed");
+        setRot(set.getDouble("rot"));
         speedx = set.getDouble("speedx");
         speedy = set.getDouble("speedy");
         rad = set.getDouble("rad");

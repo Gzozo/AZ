@@ -2,17 +2,12 @@ package AZ;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.Executors;
@@ -22,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -30,6 +24,8 @@ import org.json.JSONObject;
  */
 public class Server extends Thread implements GameManager
 {
+    private long ellapsedTime;
+    
     /**
      * A játék állapota
      * Mutatja a felhasználónak az állapotot, és tárolja hogy meghalhat e a tank
@@ -72,6 +68,7 @@ public class Server extends Thread implements GameManager
     AtomicInteger gridSize = new AtomicInteger(25);
     ReentrantLock lock = new ReentrantLock();
     boolean statsChanged = false;
+    long Time;
     
     Dictionary players = new Dictionary();
     
@@ -111,6 +108,8 @@ public class Server extends Thread implements GameManager
         f.setGridSize(refer);
         
         state = GameState.JOINING;
+        Time = System.currentTimeMillis();
+        ellapsedTime = 0;
     }
     
     /**
@@ -157,6 +156,8 @@ public class Server extends Thread implements GameManager
         lock.lock();
         try
         {
+            ellapsedTime = System.currentTimeMillis() - Time;
+            Time = System.currentTimeMillis();
             ((ArrayList<GameEntity>) entities.clone()).forEach(x -> x.Tick(this));
             String data = AllData();
             DatagramPacket dp = new DatagramPacket(data.getBytes(), data.getBytes().length);
@@ -494,6 +495,8 @@ public class Server extends Thread implements GameManager
     void Tick()
     {
         lock.lock();
+        ellapsedTime = System.currentTimeMillis() - Time;
+        Time = System.currentTimeMillis();
         try
         {
             players.forEach((x, y) -> y.t.Tick(this));
@@ -538,5 +541,11 @@ public class Server extends Thread implements GameManager
     public void PlayMusic(String f)
     {
         music.add(f);
+    }
+    
+    @Override
+    public long ellapsedTime()
+    {
+        return ellapsedTime;
     }
 }

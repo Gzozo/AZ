@@ -73,7 +73,7 @@ public class Tank implements GameEntity
         colX = this.rectWidth - colW;
         colY = this.rectHeight - colH;
         gridSize = grid;
-       XRandom r = newXRandom();
+        XRandom r = new XRandom();
         rot = prevRot = r.nextInt(4) * Math.PI / 2;
         for(Entry<String, Integer> entry : Controls.commands.entrySet())
         {
@@ -251,7 +251,8 @@ public class Tank implements GameEntity
     @Override
     public synchronized void Tick(GameManager manager)
     {
-        if(MoveMethod())
+        double ratio = manager.ellapsedTime() / Const.framerate;
+        if(MoveMethod(ratio))
             return;
         
         if(keys.get(Controls.commands.get("fire")) && cooldown <= 0)
@@ -282,35 +283,40 @@ public class Tank implements GameEntity
     
     public boolean MoveMethod()
     {
+        return MoveMethod(1);
+    }
+    
+    public boolean MoveMethod(double ratio)
+    {
         if(dead)
             return true;
         boolean mozog = false;
         if(keys.get(Controls.commands.get("w")))
         {
             mozog = true;
-            x -= Math.sin(-rot) * speed;
-            y -= Math.cos(-rot) * speed;
+            x -= Math.sin(-rot) * speed * ratio;
+            y -= Math.cos(-rot) * speed * ratio;
         }
         if(keys.get(Controls.commands.get("s")))
         {
             mozog = true;
-            x += Math.sin(-rot) * speed;
-            y += Math.cos(-rot) * speed;
+            x += Math.sin(-rot) * speed * ratio;
+            y += Math.cos(-rot) * speed * ratio;
         }
         if(keys.get(Controls.commands.get("a")))
         {
             mozog = true;
-            Rotate(-rotSpeed);
+            Rotate(-rotSpeed * ratio);
         }
         if(keys.get(Controls.commands.get("d")))
         {
             mozog = true;
-            Rotate(rotSpeed);
+            Rotate(rotSpeed * ratio);
         }
         if(!mozog)
             rotateTick = 0;
         else
-            rotateTick++;
+            rotateTick += ratio;
         return false;
     }
     
