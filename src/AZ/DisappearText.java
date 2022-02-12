@@ -10,7 +10,7 @@ public class DisappearText extends Ammo
     
     public DisappearText(String text, double x, double y, int size)
     {
-        this(text, x, y, size, (int) (10 * Const.framerate));
+        this(text, x, y, size, (int) (5 * Const.framerate));
     }
     
     public DisappearText(String text, double x, double y, int size, int lifeTime)
