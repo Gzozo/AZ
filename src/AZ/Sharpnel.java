@@ -24,9 +24,9 @@ public class Sharpnel extends Ammo
     }
     
     @Override
-    public synchronized void Tick(GameManager manager)
+    public synchronized void Step(GameManager manager)
     {
-        Tick(manager, false);
+        Move(manager, false);
     }
     
     @Override
