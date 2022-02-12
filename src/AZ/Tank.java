@@ -8,11 +8,9 @@ import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
@@ -251,7 +249,7 @@ public class Tank implements GameEntity
     @Override
     public synchronized void Tick(GameManager manager)
     {
-        double ratio = manager.ellapsedTime() / Const.framerate;
+        double ratio = manager.ellapsedTime() / Const.frameTime;
         if(MoveMethod(ratio))
             return;
         

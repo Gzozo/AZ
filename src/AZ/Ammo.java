@@ -6,7 +6,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -155,9 +154,9 @@ public abstract class Ammo implements GameEntity
      * @param manager J�t�k menedzser
      * @param fal     Sz�moljon e mez? �tk�z�st?
      */
-    public synchronized void Tick(GameManager manager, boolean fal)
+    public synchronized void Move(GameManager manager, boolean fal)
     {
-        double ratio = manager.ellapsedTime() / Const.framerate;
+        double ratio = manager.ellapsedTime() / Const.frameTime;
         //Log.log(ratio + " " + manager.ellapsedTime() + " " + System.currentTimeMillis() + " " + (manager instanceof
         // Server));
         int step = (int) Math.floor(speed / (rad / 2)) + 1;//Const given speed
@@ -249,7 +248,18 @@ public abstract class Ammo implements GameEntity
             if(!hitwall)
                 music = true;
         }
-        lifeTime -= ratio;
+    }
+    
+    public void Step(GameManager manager)
+    {
+        Move(manager, true);
+    }
+    
+    @Override
+    public synchronized void Tick(GameManager manager)
+    {
+        Step(manager);
+        lifeTime -= manager.ellapsedTime() / Const.frameTime;
         if(lifeTime <= 0)
         {
             OnDeath(manager);
@@ -259,12 +269,6 @@ public abstract class Ammo implements GameEntity
         {
             manager.RemoveEntity(this);
         }
-    }
-    
-    @Override
-    public synchronized void Tick(GameManager manager)
-    {
-        Tick(manager, true);
     }
     
     /**

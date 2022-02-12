@@ -10,7 +10,8 @@ public class Const
     static String IconFile = "az.png";
     static String ServerIP = "IP", ServerPort = "Port", ClientPort = "CPort", Selected = "Tank", Keys = "Keys",
             playerName = "Name";
-    static double framerate = 17;
+    static double framerate = 60;
+    static double frameTime = 1000 / framerate;
     
     public static class Music
     {
@@ -25,7 +26,7 @@ public class Const
     
     // Server JSON
     static String rejoin = "Rejoin", entities = "Entity", players = "Players", highlight = "Highlight", dead = "Dead"
-            , music = "Music", gameState = "State";
+            , music = "Music", gameState = "State", displayName = "Name";
     // Config
     static String config = "Config";
     static String labirintusSeed = "Labirintus", gridSize = "GridSize", width = "Width", height = "Height",

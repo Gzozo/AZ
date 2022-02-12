@@ -1,21 +1,14 @@
 package AZ;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import AZ.Server.GameState;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
 
 import java.awt.event.KeyEvent;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestAmmo
@@ -55,7 +48,7 @@ public class TestAmmo
         double speedx = a.speedx;
         double speedy = a.speedy;
         
-        a.Tick(server, false);//3
+        a.Move(server, false);//3
         
         assertEquals(speedx, a.x, 0.1);
         assertEquals(speedy, a.y, 0.1);
@@ -68,13 +61,13 @@ public class TestAmmo
         HE he = new HE();
         PowerUp pu = new PowerUp(5, 5, 30, null, he);
         
-        a.Tick(server, false);
+        a.Move(server, false);
         assertTrue(t.dead);//4
         assertTrue(t.ammo instanceof AP);
-        pu.Tick(server, false);
+        pu.Move(server, false);
         assertTrue(t.ammo instanceof AP);
         t.dead = false;
-        pu.Tick(server, false);//5
+        pu.Move(server, false);//5
         assertTrue(t.ammo instanceof HE);
         t.ammo.shellCount = 2;
         t.ammo.cooldown = 1;
