@@ -352,6 +352,8 @@ public class GamePanel extends JPanel implements GameManager
         }
         if(receive.has(Const.rejoin))
         {
+            localEffects.clear();
+            entities.clear();
             dead = false;
             JSONObject send = new JSONObject();
             send.put(Const.join, tankPic);
@@ -363,7 +365,7 @@ public class GamePanel extends JPanel implements GameManager
         if(receive.has(Const.highlight))
         {
             JSONObject highlight = receive.getJSONObject(Const.highlight);
-            Signal s = new Signal(90, Color.red);
+            Signal s = new Signal(Color.red);
             s.setFromJSON(highlight);
             localEffects.add(s);
         }
@@ -387,6 +389,15 @@ public class GamePanel extends JPanel implements GameManager
                 stats.add(c);
             }
             table.repaint();
+        }
+        if(receive.has(Const.displayName))
+        {
+            for(Map.Entry<String, Tank> entry : players.entrySet())
+            {
+                Tank a = entry.getValue();
+                localEffects.add(new DisappearText(entry.getKey(), a.x, a.y - 10, 15));
+            }
+            //localEffects.add(new DisappearText(name, activePlayer.x, activePlayer.y, 40));
         }
     }
     

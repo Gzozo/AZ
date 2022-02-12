@@ -67,7 +67,7 @@ public class Server extends Thread implements GameManager
     final static String[] pics = new String[]{"p1.png", "p2.png", "p3.png", "p4.png", "p5.png"};
     AtomicInteger gridSize = new AtomicInteger(25);
     ReentrantLock lock = new ReentrantLock();
-    boolean statsChanged = false;
+    boolean statsChanged = false, sendDisplayName = false;
     long Time;
     
     Dictionary players = new Dictionary();
@@ -239,6 +239,11 @@ public class Server extends Thread implements GameManager
             music.clear();
         }
         ret.put(Const.gameState, state.state);
+        if(sendDisplayName)
+        {
+            sendDisplayName = false;
+            ret.put(Const.displayName, 1);
+        }
         return ret.toString();
     }
     
@@ -406,6 +411,7 @@ public class Server extends Thread implements GameManager
         DatagramPacket respond = new DatagramPacket(ret.toString().getBytes(), ret.toString().length(),
                 packet.getAddress(), packet.getPort());
         server.send(respond);
+        sendDisplayName = true;
         statsChanged = true;
     }
     
