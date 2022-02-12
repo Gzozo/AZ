@@ -36,7 +36,7 @@ public class Main implements Runnable
 {
     JFrame openingFrame;
     ButtonGroup tanks;
-    String title = "AZ v0.5 beta";
+    String title = "AZ v0.5.1 beta";
     
     /**
      * Létrehozza a framet, és feltölti a Componensekkel
