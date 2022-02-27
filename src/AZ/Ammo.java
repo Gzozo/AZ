@@ -114,7 +114,7 @@ public abstract class Ammo implements GameEntity
     {
         g.setColor(c);
         Erase(g);
-        if(type.equals("default"))
+        if(type.equals("default") || type.equals("laser"))
         {
             g.fillArc((int) (x - rad / 2), (int) (y - rad / 2), (int) rad, (int) rad, 0, 360);
         }
@@ -133,6 +133,8 @@ public abstract class Ammo implements GameEntity
     @Override
     public synchronized void Erase(Graphics2D g)
     {
+        if(this instanceof Laser)
+            Log.log("Erase");
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR));
         if(type.equals("default"))
         {
@@ -146,7 +148,7 @@ public abstract class Ammo implements GameEntity
     }
     
     boolean music = true;
-    final double changeDir = 0.1;
+    double changeDir = 0.1;
     
     /**
      * Tick()
@@ -156,6 +158,8 @@ public abstract class Ammo implements GameEntity
      */
     public synchronized void Move(GameManager manager, boolean fal)
     {
+        if(f == null)
+            return;
         double ratio = manager.ellapsedTime() / Const.frameTime;
         //Log.log(ratio + " " + manager.ellapsedTime() + " " + System.currentTimeMillis() + " " + (manager instanceof
         // Server));
@@ -260,14 +264,23 @@ public abstract class Ammo implements GameEntity
     {
         Step(manager);
         lifeTime -= manager.ellapsedTime() / Const.frameTime;
+        CheckLife(manager);
+        CheckPos(manager);
+    }
+    
+    void CheckLife(GameManager manager)
+    {
         if(lifeTime <= 0)
         {
             OnDeath(manager);
-            manager.RemoveEntity(this);
         }
+    }
+    
+    void CheckPos(GameManager manager)
+    {
         if(manager.CheckTank(this))
         {
-            manager.RemoveEntity(this);
+            OnCollision(manager);
         }
     }
     
@@ -278,6 +291,13 @@ public abstract class Ammo implements GameEntity
      */
     public void OnDeath(GameManager manager)
     {
+        manager.RemoveEntity(this);
+    }
+    
+    public void OnCollision(GameManager manager)
+    {
+        //manager.RemoveEntity(this);
+        OnDeath(manager);
     }
     
     /**

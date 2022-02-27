@@ -292,7 +292,15 @@ public class GamePanel extends JPanel implements GameManager
             JSONObject entity = receive.getJSONObject(Const.entities);
             entities.values().forEach(x -> x.Erase((Graphics2D) moving.getGraphics()));
             int i = 0, j = 0;
-            entities.keySet().removeIf(x -> !entity.has(x + ""));
+            //entities.keySet().removeIf(x -> !entity.has(x + ""));
+            for(Integer key : ((HashMap<Integer, GameEntity>) entities.clone()).keySet())
+            {
+                if(!entity.has(key + ""))
+                {
+                    Log.log("Remove: " + entities.get(key).getClass().toString());
+                    RemoveEntity(entities.get(key));
+                }
+            }
             //localEffects.keySet().removeIf(x -> !entity.has(x + ""));
             for(String s : entity.keySet())
             {
@@ -302,6 +310,12 @@ public class GamePanel extends JPanel implements GameManager
                 {
                     Ammo a = new AP(0, 0, 0, f);
                     a.setFromJSON(entity.getJSONObject(s));
+                    if(a.type.equals("laser"))
+                    {
+                        a = new Laser(0, 0, 0, f);
+                        a.setFromJSON(entity.getJSONObject(s));
+                        Log.log(a.getClass().toString());
+                    }
                     entities.put(Integer.valueOf(s), a);
                     //localEffects.add(a);
                 }
@@ -509,7 +523,18 @@ public class GamePanel extends JPanel implements GameManager
     {
         lock.lock();
         localEffects.remove(e);
+        entities.values().remove(e);
         e.Erase((Graphics2D) effects.getGraphics());
+        if(e instanceof Laser)
+        {
+            //TODO: ez csak a laserre érvényes, a többit nem törli ami a moving rétegen van
+            Log.log("Laser remove");
+            ((Laser) e).erase = true;
+            e.Erase((Graphics2D) moving.getGraphics());
+        }
+        //TODO: sok a power remove
+        //else if(e instanceof Ammo)
+        //    Log.log(((Ammo) e).type);
         lock.unlock();
     }
     

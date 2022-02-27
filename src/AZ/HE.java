@@ -39,6 +39,7 @@ public class HE extends Ammo
     @Override
     public void OnDeath(GameManager manager)
     {
+        super.OnDeath(manager);
         Detonate(manager);
     }
     

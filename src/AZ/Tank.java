@@ -65,7 +65,7 @@ public class Tank implements GameEntity
         this.rectHeight = rectHeight;
         this.f = f;
         this.manager = panel;
-        ammo = new AP();
+        ammo = new Laser();
         colW = this.rectWidth;
         colH = this.rectHeight * 5 / 6;
         colX = this.rectWidth - colW;
