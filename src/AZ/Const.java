@@ -1,7 +1,7 @@
 package AZ;
 
 /**
- * statikus Stringek, amik file neveket, vagy JSON kulcsokat jelölnek
+ * statikus Stringek, amik file neveket, vagy JSON kulcsokat jelï¿½lnek
  */
 public class Const
 {
@@ -18,6 +18,7 @@ public class Const
         static String shoot = "shoot.wav", tankDestroy = "explode.wav", obtainPowerUp = "power.wav", he_explode =
                 "he_explode.wav", hitWall = "hit_wall.wav", playerJoined = "joined.wav";
         static String RainsOfCastemere = "rainsofcastamere.wav", LightOfTheSeven = "lightoftheseven.wav";
+        static String rocketExplosion = "rocket_explosion.wav";
     }
     
     //Kliens-Server JSON

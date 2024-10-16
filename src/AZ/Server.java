@@ -80,7 +80,7 @@ public class Server extends Thread implements GameManager
     /**
      * First always default!
      **/
-    Ammo[] ammoTypes = new Ammo[]{new AP(), new HE(), new Sharpnel(), new Minigun()};
+    Ammo[] ammoTypes = new Ammo[]{new AP(), new HE(), new Sharpnel(), new Minigun(), new Rocket()};
     double chancePU = 1.0 / 10 / 30;
     
     public boolean dying = false;
