@@ -80,7 +80,7 @@ public class Server extends Thread implements GameManager
     /**
      * First always default!
      **/
-    Ammo[] ammoTypes = new Ammo[]{new AP(), new HE(), new Sharpnel(), new Minigun()};
+    Ammo[] ammoTypes = new Ammo[]{new AP(), new HE(), new Sharpnel(), new Minigun(), new Rocket(this)};
     double chancePU = 1.0 / 10 / 30;
     
     public boolean dying = false;
@@ -203,7 +203,7 @@ public class Server extends Thread implements GameManager
         JSONObject entity = new JSONObject();
         /*for(int i = 0; i < entities.size(); i++)
         {
-            entity.put(i + "", entities.get(i).toJSON());
+            entity.put(i + "", entities.get(i). toJSON());
         }*/
         for(Entry<Integer, GameEntity> pair : entities.entrySet())
         {
@@ -561,5 +561,14 @@ public class Server extends Thread implements GameManager
     public long ellapsedTime()
     {
         return ellapsedTime;
+    }
+
+    @Override
+    public List<Tank> getPlayers() {
+        List<Tank> playerList = new ArrayList<>();
+        for (Client client : players.values()) {
+            playerList.add(client.t);
+        }
+        return playerList;
     }
 }

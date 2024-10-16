@@ -234,6 +234,9 @@ public class Tank implements GameEntity
             return;
         if(Controls.commands.containsValue(code))
             keys.put(code, lenyom);
+        if (code == KeyEvent.VK_R && lenyom) {
+            ammo = new Rocket(Spawnx(), Spawny(), rot - Math.PI / 2, f, manager);
+        }
     }
     
     private double rotateTick = 0;
@@ -620,7 +623,10 @@ public class Tank implements GameEntity
     {
         try
         {
-            ammo = (Ammo) Class.forName(name).getDeclaredConstructor().newInstance();
+            if (name.equals(Rocket.class.getName()))
+                ammo = new Rocket(manager);
+            else
+                ammo = (Ammo) Class.forName(name).getDeclaredConstructor().newInstance();
         }
         catch(Exception e)
         {
