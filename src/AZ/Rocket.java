@@ -21,8 +21,8 @@ public class Rocket extends Ammo {
         this.gameManager = gameManager;
     }
 
-    public Rocket() {
-        this(0, 0, 0, null, null);
+    public Rocket(GameManager gameManager) {
+        this(0, 0, 0, null, gameManager);
     }
 
     @Override
@@ -60,7 +60,7 @@ public class Rocket extends Ammo {
 
     @Override
     public Ammo newInstance() {
-        return new Rocket();
+        return new Rocket(gameManager);
     }
 
     private Tank findNearestPlayer() {

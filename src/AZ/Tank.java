@@ -623,7 +623,10 @@ public class Tank implements GameEntity
     {
         try
         {
-            ammo = (Ammo) Class.forName(name).getDeclaredConstructor().newInstance();
+            if (name.equals(Rocket.class.getName()))
+                ammo = new Rocket(manager);
+            else
+                ammo = (Ammo) Class.forName(name).getDeclaredConstructor().newInstance();
         }
         catch(Exception e)
         {
