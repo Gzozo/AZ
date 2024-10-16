@@ -1,45 +1,51 @@
 package AZ;
 
+import java.util.List;
+
 public interface GameManager
 {
     /**
-     * Eltávolítja a GameEntity-t
+     * Eltï¿½volï¿½tja a GameEntity-t
      *
      * @param entity A GameEntity
      */
     void RemoveEntity(GameEntity entity);
     
     /**
-     * Ütközést vizsgál az össze tankkal
+     * ï¿½tkï¿½zï¿½st vizsgï¿½l az ï¿½ssze tankkal
      *
-     * @param ammo A lövedék ami ütközik
-     * @return ütközött e?
+     * @param ammo A lï¿½vedï¿½k ami ï¿½tkï¿½zik
+     * @return ï¿½tkï¿½zï¿½tt e?
      */
     boolean CheckTank(Ammo ammo);
     
     /**
-     * Hozzáad egy GameEntity-t
+     * Hozzï¿½ad egy GameEntity-t
      *
      * @param entity A GameEntity
      */
     void AddEntity(GameEntity entity);
     
     /**
-     * Halott kliens értesítése, hogy meghalt
+     * Halott kliens ï¿½rtesï¿½tï¿½se, hogy meghalt
      *
      * @param t A kliens tankja
      */
     void deadTank(Tank t);
     
     /**
-     * Zene lejátszása
+     * Zene lejï¿½tszï¿½sa
      *
      * @param f Zene neve
      */
     void PlayMusic(String f);
     
+    /**
+     * Visszaadja a jï¿½tï¿½kosok listï¿½jï¿½t
+     *
+     * @return A jï¿½tï¿½kosok listï¿½ja
+     */
+    List<Tank> getPlayers();
     
     long ellapsedTime();
-    
-    
 }

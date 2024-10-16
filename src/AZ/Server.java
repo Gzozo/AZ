@@ -203,7 +203,7 @@ public class Server extends Thread implements GameManager
         JSONObject entity = new JSONObject();
         /*for(int i = 0; i < entities.size(); i++)
         {
-            entity.put(i + "", entities.get(i).toJSON());
+            entity.put(i + "", entities.get(i). toJSON());
         }*/
         for(Entry<Integer, GameEntity> pair : entities.entrySet())
         {

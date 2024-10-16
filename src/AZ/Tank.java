@@ -234,6 +234,9 @@ public class Tank implements GameEntity
             return;
         if(Controls.commands.containsValue(code))
             keys.put(code, lenyom);
+        if (code == KeyEvent.VK_R && lenyom) {
+            ammo = new Rocket(Spawnx(), Spawny(), rot - Math.PI / 2, f, manager);
+        }
     }
     
     private double rotateTick = 0;

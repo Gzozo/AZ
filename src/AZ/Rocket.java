@@ -6,79 +6,72 @@ import java.util.Optional;
 
 public class Rocket extends Ammo {
     private static final double TURNING_CIRCLE = 0.1;
-    private static final double WOBBLE_FACTOR = 0.05;
+    private static final double WOBBLE = 0.05;
     private static final int SEEK_DELAY = 60; // 1 second at 60 FPS
 
     private int seekTimer = SEEK_DELAY;
-    private boolean seeking = false;
+    private Tank target;
+    private GameManager gameManager;
 
-    public Rocket(double x, double y, double rot, Field f) {
+    public Rocket(double x, double y, double rot, Field f, GameManager gameManager) {
         super(x, y, 5, 2.5, rot, 600, f);
         setPic("rocket.png");
         name = "Rocket";
         shellCount = 5;
+        this.gameManager = gameManager;
     }
 
     public Rocket() {
-        this(0, 0, 0, null);
+        this(0, 0, 0, null, null);
     }
 
     @Override
-    public void Move(GameManager manager, boolean fal) {
+    public synchronized void Move(GameManager manager, boolean fal) {
         if (seekTimer > 0) {
             seekTimer--;
-        } else if (!seeking) {
-            seeking = true;
-        }
-
-        if (seeking) {
-            Optional<Tank> target = findNearestPlayer();
-            target.ifPresent(this::seekTarget);
-        }
-
-        super.Move(manager, fal);
-    }
-
-    private Optional<Tank> findNearestPlayer() {
-        List<Tank> players = f.getPlayers();
-        return players.stream()
-                .filter(player -> player != parent)
-                .min((p1, p2) -> Double.compare(distanceTo(p1), distanceTo(p2)));
-    }
-
-    private double distanceTo(Tank player) {
-        double dx = player.x - x;
-        double dy = player.y - y;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    private void seekTarget(Tank target) {
-        double targetAngle = Math.atan2(target.y - y, target.x - x);
-        double angleDifference = targetAngle - rot;
-
-        if (Math.abs(angleDifference) > TURNING_CIRCLE) {
-            rot += Math.signum(angleDifference) * TURNING_CIRCLE;
         } else {
-            rot = targetAngle;
+            if (target == null) {
+                target = findNearestPlayer();
+            }
+            if (target != null) {
+                double targetAngle = Math.atan2(target.y - y, target.x - x);
+                double angleDifference = targetAngle - rot;
+                if (Math.abs(angleDifference) > TURNING_CIRCLE) {
+                    rot += Math.signum(angleDifference) * TURNING_CIRCLE;
+                } else {
+                    rot = targetAngle;
+                }
+                rot += (Math.random() - 0.5) * WOBBLE;
+            }
         }
-
-        rot += (Math.random() - 0.5) * WOBBLE_FACTOR;
+        super.Move(manager, fal);
     }
 
     @Override
     public void OnDeath(GameManager manager) {
         // Handle rocket explosion
-        manager.PlayMusic(Const.Music.rocketExplosion);
-        // Add explosion effect or damage logic here
+        manager.PlayMusic(Const.Music.rocketExplode);
     }
 
     @Override
     public Ammo newInstance(double x, double y, double rot, Field f) {
-        return new Rocket(x, y, rot, f);
+        return new Rocket(x, y, rot, f, gameManager);
     }
 
     @Override
     public Ammo newInstance() {
         return new Rocket();
+    }
+
+    private Tank findNearestPlayer() {
+        List<Tank> players = gameManager.getPlayers();
+        Optional<Tank> nearestPlayer = players.stream()
+                .filter(player -> player != parent)
+                .min((p1, p2) -> Double.compare(distanceTo(p1), distanceTo(p2)));
+        return nearestPlayer.orElse(null);
+    }
+
+    private double distanceTo(Tank player) {
+        return Math.sqrt(Math.pow(player.x - x, 2) + Math.pow(player.y - y, 2));
     }
 }
