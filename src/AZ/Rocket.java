@@ -66,7 +66,7 @@ public class Rocket extends Ammo {
     private Tank findNearestPlayer() {
         List<Tank> players = gameManager.getPlayers();
         Optional<Tank> nearestPlayer = players.stream()
-                .filter(player -> player != parent)
+//                .filter(player -> player != parent)
                 .min((p1, p2) -> Double.compare(distanceTo(p1), distanceTo(p2)));
         return nearestPlayer.orElse(null);
     }
