@@ -562,4 +562,13 @@ public class Server extends Thread implements GameManager
     {
         return ellapsedTime;
     }
+
+    @Override
+    public List<Tank> getPlayers() {
+        List<Tank> playerList = new ArrayList<>();
+        for (Client client : players.values()) {
+            playerList.add(client.t);
+        }
+        return playerList;
+    }
 }

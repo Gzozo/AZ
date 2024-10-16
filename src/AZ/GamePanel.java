@@ -663,5 +663,10 @@ public class GamePanel extends JPanel implements GameManager
             return ret;
         }
     }
+
+    @Override
+    public List<Tank> getPlayers() {
+        return new ArrayList<>(players.values());
+    }
     
 }
